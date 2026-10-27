@@ -242,7 +242,7 @@ pre.code { font-family: var(--mono); font-size: 12px; line-height: 1.55; overflo
     <p class="notes" style="margin-top:10px">Writing a new stage: add its class and a REGISTRY line in <code>ShooterStages.java</code>, its twin in the DEFS object in this page's script with the same name and tunables, and a line in <code>parity-vectors.txt</code>. The spec string is the contract between them.</p>
   </section>
 
-  <p class="notes">This page is TeamCode/sim/shooter-brain-testbed.html in the team repository. How this bench is modeled. The ball leaves at 55° from 0.35 m up; the goal opening is 1.00 m up and 36 cm wide; exit speed is 0.0025 m/s per rpm. The table has six points from 1 m to 5 m worked out without air drag. Air drag then shortens every flight past 2 m, more the farther it goes (about 22 cm short at 5 m with the slider at 1×), and the table does not know that. The camera reports 30 times a second. Each tag's reading is off by a random amount that grows with distance (about 2.7 cm at 1 m, about 31.5 cm at 5 m, scaled by the noise slider), far tags are missed more often, 1.5% of readings are wild, and now and then all tags vanish for 0.4 to 1.0 s. The flywheel takes time to change speed, jitters by 0.5%, and loses 10% of its speed each time it throws a ball. All of these are placeholders until we measure the real robot.</p>
+  <p class="notes">This page is TeamCode/sim/shooter-brain-testbed.html in the team repository. The bench uses placeholder numbers until we measure the real robot. The ball leaves at 55° from 0.35 m up; the goal opening is 1.00 m up and 36 cm wide; exit speed is 0.0025 m/s per rpm. The table has six points from 1 m to 5 m worked out without air drag. Air drag then shortens every flight past 2 m, more the farther it goes (about 22 cm short at 5 m with the slider at 1×), and the table does not know that. The camera reports 30 times a second. Each tag's reading is off by a random amount that grows with distance (about 2.7 cm at 1 m, about 31.5 cm at 5 m, scaled by the noise slider), far tags are missed more often, 1.5% of readings are wild, and now and then all tags vanish for 0.4 to 1.0 s. The flywheel takes time to change speed, jitters by 0.5%, and loses 10% of its speed each time it throws a ball. All of these are placeholders until we measure the real robot.</p>
 </div>
 
 <script>
@@ -312,7 +312,7 @@ const DEFS = {
   RecentTagGate: { kind: 'gate', desc: 'Hold if the last tag sighting is older than maxAgeMs. Stops shots at where the goal used to be.', tun: { maxAgeMs: { v: 300, min: 50, max: 2000, step: 25 } },
     run(tun, st, ctx) { return ctx.tagAgeMs <= tun.maxAgeMs ? '' : `stale target (${ctx.tagAgeMs.toFixed(0)} ms)`; } },
   VelocityToleranceGate: { kind: 'gate', desc: 'Hold until the measured flywheel speed is within tolRpm of the target.', tun: { tolRpm: { v: 60, min: 5, max: 400, step: 5 } },
-    run(tun, st, ctx) { const dv = ctx.actualRpm - ctx.targetRpm; return Math.abs(dv) <= tun.tolRpm ? '' : `flywheel ${dv >= 0 ? '+' : ''}${dv.toFixed(0)} rpm`; } },
+    run(tun, st, ctx) { if (!Number.isFinite(ctx.actualRpm)) return 'no flywheel reading'; const dv = ctx.actualRpm - ctx.targetRpm; return Math.abs(dv) <= tun.tolRpm ? '' : `flywheel ${dv >= 0 ? '+' : ''}${dv.toFixed(0)} rpm`; } },
 };
 const KIND_LABEL = { range: 'range filter', rpm: 'velocity modifier', gate: 'fire gate' };
 // Plain-words slider labels; the code name stays beside each so it matches the spec and the Java.

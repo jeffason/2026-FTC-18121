@@ -12,7 +12,7 @@ Limelight tags ──► range filters ──► calibration table ──► vel
 With **no stages** the brain uses the first tag it sees, looks the range up in the table,
 and fires every cycle. That is the baseline. Every stage you add is one idea, with one job.
 
-| Kind | Interface | Signature | Built-ins |
+| Job | Java name | Input → output | Built-ins |
 |---|---|---|---|
 | range filter | `RangeFilter` | tags this frame + estimate in → estimate out (m) | `OutlierReject`, `TagMean`, `TagMedian`, `RollingAverage` |
 | velocity modifier | `VelocityModifier` | shot context + rpm in → rpm out | `RangeTrim`, `FarShotBoost`, `ManualOffset` |
@@ -51,7 +51,7 @@ Double-click `TeamCode/sim/shooter-brain-testbed.html`. It is one self-contained
 Your pipeline is remembered in that browser. The published copy is at
 <https://claude.ai/artifact/XGNJu4H8anUFcdKBQHtyu9>.
 
-The sim and the Java have the **same stage names, tunables and math**. In the page, each stage is an
+The sim and the Java share **stage names, tunables and math**; the parity vectors check their outputs agree. In the page, each stage is an
 entry in the `DEFS` object in the script; on the robot it is a class in `ShooterStages.java`.
 
 ## Run the tests

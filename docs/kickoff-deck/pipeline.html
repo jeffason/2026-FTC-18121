@@ -13,7 +13,6 @@
 </div>
 <div style="display:flex;flex-direction:column;gap:16px">
 <p style="font-family:'JetBrains Mono', monospace;font-size:28px;line-height:1.5;background:#1e2126;color:#eceef1;padding:26px 36px;border-radius:12px">OutlierReject(maxDevM=0.3); TagMedian; RollingAverage(frames=5); <span style="color:#7f8792">!FarShotBoost(startM=2.5, pctPerM=2);</span> RecentTagGate(maxAgeMs=300); VelocityToleranceGate(tolRpm=60)</p>
-<p style="font-size:34px;color:#b4bac4">One line is the whole pipeline. The sim writes it. The robot reads it.</p>
 </div>
 <aside>Every stage has a name and an on/off switch, and most have tunables, numbers you can adjust. Range filters run in the order you list them, then the velocity modifiers; each fire gate checks the same shot information and can hold the shot. With no stages at all you get the baseline: first tag, table value, fire every cycle. That line of text is the spec. Semicolons separate stages, the numbers in parentheses are the tunables, and a leading exclamation mark means switched off. Read it out loud, stage by stage, and you have described a whole brain in one breath. The simulator writes this line for you, and ShooterConfig.java on the robot reads it, so you can share a pipeline with anyone on the team as plain text.</aside>
 </section>
