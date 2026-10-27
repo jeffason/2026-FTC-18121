@@ -77,6 +77,7 @@ public final class ShooterStages {
         private final Deque<Double> hist = new ArrayDeque<>();
         @Override public String name() { return "RollingAverage"; }
         @Override public List<Tunable> tunables() { return Collections.singletonList(frames); }
+        @Override public void reset() { hist.clear(); }
         @Override public double filterRange(RangeFrame f, double rangeIn) {
             hist.addLast(rangeIn);
             while (hist.size() > (int) frames.get()) hist.removeFirst();

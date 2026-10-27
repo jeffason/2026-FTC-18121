@@ -226,7 +226,7 @@ pre.code { font-family: var(--mono); font-size: 12px; line-height: 1.55; overflo
       <h2 style="margin:0">Export to TeamCode · ShooterConfig.java</h2>
       <div class="row"><button class="sm" id="btnCopySpec">Copy spec only</button><button class="sm" id="btnCopy">Copy Java</button></div>
     </div>
-    <p class="notes" style="margin-bottom:8px">The PIPELINE line is your pipeline, stage for stage, with the same names and tunables as <code>ShooterStages.java</code>. Paste the whole file over <code>TeamCode/src/main/java/org/firstinspires/ftc/teamcode/shooter/ShooterConfig.java</code>, or just the spec into its PIPELINE field. The calibration table is the sim's placeholder; the Shooter Calibration OpMode replaces it on the robot.</p>
+    <p class="notes" style="margin-bottom:8px">Paste over <code>TeamCode/src/main/java/org/firstinspires/ftc/teamcode/shooter/ShooterConfig.java</code>. The calibration table is a placeholder until you run Shooter: Calibration on the robot.</p>
     <pre id="exportCode" class="code"></pre>
   </section>
 
@@ -271,6 +271,8 @@ function trajectory(rpm, scale) {
 }
 function randn() { let u = 0, v = 0; while (u === 0) u = Math.random(); while (v === 0) v = Math.random(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
 const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+const snap = (v, t) => { if (!Number.isFinite(v)) return t.v; const c = clamp(v, t.min, t.max); return t.step > 0 ? Math.min(t.max, t.min + Math.round((c - t.min) / t.step) * t.step) : c; };
+const MAX_STAGES = 24;
 const mean = xs => { let s = 0, n = 0; for (const x of xs) { s += x; n++; } return n ? s / n : NaN; };
 const median = xs => { const s = [...xs].sort((a, b) => a - b), n = s.length; return n ? (n % 2 ? s[(n - 1) / 2] : (s[n / 2 - 1] + s[n / 2]) / 2) : NaN; };
 
@@ -338,8 +340,9 @@ function fromSpec(spec) {
       if (!kv.trim()) continue;
       const parts = kv.split('='); if (parts.length !== 2) throw new Error(`Expected name=value in: ${raw.trim()}`);
       const k = parts[0].trim(); if (!(k in s.def.tun)) throw new Error(`Stage ${name} has no tunable '${k}'`);
-      const t = s.def.tun[k]; s.tun[k] = clamp(parseFloat(parts[1]), t.min, t.max);
+      s.tun[k] = snap(parseFloat(parts[1]), s.def.tun[k]);
     }
+    if (out.length >= MAX_STAGES) throw new Error(`At most ${MAX_STAGES} stages`);
     out.push(s);
   }
   return out;
@@ -547,7 +550,7 @@ const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
 
 function renderPalette() {
   $('palette').innerHTML = Object.keys(DEFS).map(n => `<button class="k-${DEFS[n].kind}" data-add="${n}" title="${esc(DEFS[n].desc)}">${n}</button>`).join('');
-  $('palette').querySelectorAll('[data-add]').forEach(btn => btn.addEventListener('click', () => { yours.stages.push(makeStage(btn.dataset.add)); pipelineChanged(); }));
+  $('palette').querySelectorAll('[data-add]').forEach(btn => btn.addEventListener('click', () => { if (yours.stages.length >= MAX_STAGES) { $('specErr').textContent = `At most ${MAX_STAGES} stages`; return; } yours.stages.push(makeStage(btn.dataset.add)); pipelineChanged(); }));
 }
 function renderStages() {
   const host = $('stages'); host.innerHTML = '';
@@ -565,7 +568,7 @@ function renderStages() {
     card.querySelector('[data-on]').addEventListener('change', e => { s.on = e.target.checked; card.classList.toggle('off', !s.on); s.effect = s.on ? '—' : 'off'; specChanged(); });
     card.querySelector('[data-rm]').addEventListener('click', () => { yours.stages.splice(i, 1); pipelineChanged(); });
     card.querySelectorAll('[data-mv]').forEach(b => b.addEventListener('click', () => { const j = i + +b.dataset.mv; [yours.stages[i], yours.stages[j]] = [yours.stages[j], yours.stages[i]]; pipelineChanged(); }));
-    card.querySelectorAll('[data-tun]').forEach(r => r.addEventListener('input', () => { s.tun[r.dataset.tun] = +r.value; card.querySelector(`[data-tv="${r.dataset.tun}"]`).textContent = fmtNum(r.value); specChanged(); }));
+    card.querySelectorAll('[data-tun]').forEach(r => r.addEventListener('input', () => { s.tun[r.dataset.tun] = snap(+r.value, s.def.tun[r.dataset.tun]); card.querySelector(`[data-tv="${r.dataset.tun}"]`).textContent = fmtNum(s.tun[r.dataset.tun]); specChanged(); }));
     s.el = card.querySelector('[data-effect]'); host.appendChild(card);
   });
 }

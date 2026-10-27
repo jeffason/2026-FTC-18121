@@ -23,6 +23,9 @@ public interface Stage {
     /** Live-adjustable parameters. Tunable names are identifiers (e.g. "maxAgeMs") so they can appear in a spec. */
     List<Tunable> tunables();
 
+    /** Clear any per-run memory (e.g. a rolling window). Stages without memory do nothing. */
+    default void reset() {}
+
     default Tunable tunable(String tunableName) {
         for (Tunable t : tunables()) if (t.name.equals(tunableName)) return t;
         return null;

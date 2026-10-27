@@ -84,7 +84,7 @@ public final class ShooterBrain {
     }
 
     /** Forget the target, e.g. after the robot turns away. */
-    public void reset() { estimate = Double.NaN; lastSeenMs = Long.MIN_VALUE; lastTagCount = 0; }
+    public void reset() { estimate = Double.NaN; lastSeenMs = Long.MIN_VALUE; lastTagCount = 0; pipeline.reset(); }
 
     private ShotContext context(double tableRpm, double targetRpm, double actualRpm, long nowMs, double volts) {
         return new ShotContext(estimate, lastTagCount, nowMs - lastSeenMs, tableRpm, targetRpm, actualRpm, volts);

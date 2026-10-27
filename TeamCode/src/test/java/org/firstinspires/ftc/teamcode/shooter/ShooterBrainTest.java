@@ -91,7 +91,7 @@ public class ShooterBrainTest {
         b.observe(Collections.singletonList(2.0), 33);
         b.observe(Collections.singletonList(3.0), 66);
         assertEquals(2.0, b.getRangeMeters(), 1e-9);
-        b.observe(Collections.singletonList(6.0), 99);   // window now 2, 3, 6
+        b.observe(Collections.singletonList(6.0), 99);
         assertEquals(11.0 / 3.0, b.getRangeMeters(), 1e-9);
     }
 
@@ -189,10 +189,62 @@ public class ShooterBrainTest {
         assertEquals(p.toSpec(), Pipeline.fromSpec(p.toSpec(), ShooterStages.REGISTRY).toSpec());
     }
 
-    @Test public void defaultConfigPipelineParses() {
-        Pipeline p = ShooterStages.defaultPipeline();
-        assertTrue(p.stages().size() >= 3);
-        assertFalse(p.liveTunables().isEmpty());
+    @Test public void defaultConfigPipelineHoldsStaleTargetsAndUnreadyFlywheel() {
+        ShooterBrain b = new ShooterBrain(TABLE, ShooterStages.defaultPipeline());
+        b.observe(Arrays.asList(3.0, 3.0, 3.0), 1000);
+        double target = b.getTargetRpm();
+        assertTrue(b.evaluate(target, 1100).fire);                              // fresh tag, wheel on target
+        ShooterBrain.Decision slow = b.evaluate(target - 500, 1100);
+        assertFalse(slow.fire);
+        assertTrue(slow.holdReason, slow.holdReason.startsWith("flywheel"));      // wheel 500 rpm low
+        ShooterBrain.Decision stale = b.evaluate(target, 5000);
+        assertFalse(stale.fire);
+        assertTrue(stale.holdReason, stale.holdReason.startsWith("stale target")); // tag 4 s old
+    }
+
+    @Test public void tunableSnapsToItsStep() {
+        Pipeline p = Pipeline.fromSpec("RollingAverage(frames=2.6); TagCountGate(minTags=1.4)", ShooterStages.REGISTRY);
+        assertEquals(3, p.stages().get(0).tunable("frames").get(), 1e-9);
+        assertEquals(1, p.stages().get(1).tunable("minTags").get(), 1e-9);
+        Tunable t = new Tunable("x", 0, 0, 10, 2);
+        t.set(Double.NaN);
+        assertEquals(0, t.get(), 1e-9);
+    }
+
+    @Test public void resetClearsRollingWindow() {
+        ShooterBrain b = brain("RollingAverage(frames=5)");
+        b.observe(Collections.singletonList(1.0), 0);
+        b.observe(Collections.singletonList(1.0), 33);
+        b.reset();
+        assertFalse(b.hasTarget());
+        b.observe(Collections.singletonList(4.0), 66);
+        assertEquals(4.0, b.getRangeMeters(), 1e-9);                            // no blend with the forgotten 1.0 m
+    }
+
+    @Test public void allTunablesReachesDisabledStages() {
+        Pipeline p = Pipeline.fromSpec("TagMedian; !RecentTagGate(maxAgeMs=300)", ShooterStages.REGISTRY);
+        assertTrue(p.liveTunables().isEmpty());
+        assertEquals(1, p.allTunables().size());
+        assertEquals(p.stages().get(1), p.ownerOf(p.allTunables().get(0)));
+    }
+
+    @Test public void calibrationStoreMergesSameSpotAndRoundsDistances() {
+        double[][] t = CalibrationStore.normalize(new double[] { 3.004, 1.0, 2.0, 3.0 }, new double[] { 2500, 1750, 2080, 2400 });
+        assertEquals(3, t[0].length);
+        assertEquals(1.0, t[0][0], 1e-9);
+        assertEquals(3.0, t[0][2], 1e-9);
+        assertEquals(2450, t[1][2], 1e-9);                                       // two shots at 3.00 m averaged
+        new CalibrationTable(t[0], t[1]);                                        // what save() writes always loads
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void calibrationRejectsNaNDistance() {
+        new CalibrationTable(new double[] { 1, Double.NaN, 3 }, new double[] { 1, 2, 3 });
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void calibrationRejectsNaNRpm() {
+        new CalibrationTable(new double[] { 1, 2 }, new double[] { Double.NaN, 2 });
     }
 
     @Test(expected = IllegalArgumentException.class)

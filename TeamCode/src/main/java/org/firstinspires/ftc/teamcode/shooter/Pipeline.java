@@ -79,12 +79,22 @@ public final class Pipeline {
     /** What each stage did on the most recent run, in pipeline order. */
     public Map<Stage, String> lastEffects() { return Collections.unmodifiableMap(effects); }
 
-    /** Tunables of enabled stages, flattened in pipeline order, for a gamepad tweak menu. */
+    /** Tunables of enabled stages, flattened in pipeline order. */
     public List<Tunable> liveTunables() {
         List<Tunable> out = new ArrayList<>();
         for (Stage s : stages) if (isEnabled(s)) out.addAll(s.tunables());
         return out;
     }
+
+    /** Tunables of every stage, enabled or not, so a gamepad menu can reach and switch on a disabled stage. */
+    public List<Tunable> allTunables() {
+        List<Tunable> out = new ArrayList<>();
+        for (Stage s : stages) out.addAll(s.tunables());
+        return out;
+    }
+
+    /** Clears every stage's per-run memory. */
+    public void reset() { for (Stage s : stages) s.reset(); effects.clear(); }
 
     public Stage ownerOf(Tunable t) {
         for (Stage s : stages) if (s.tunables().contains(t)) return s;

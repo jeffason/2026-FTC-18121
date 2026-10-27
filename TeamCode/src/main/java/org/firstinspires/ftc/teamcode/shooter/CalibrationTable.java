@@ -7,6 +7,9 @@ public final class CalibrationTable {
     public CalibrationTable(double[] meters, double[] rpm) {
         if (meters.length != rpm.length || meters.length < 2)
             throw new IllegalArgumentException("Calibration table needs at least 2 matching points");
+        for (int i = 0; i < meters.length; i++)
+            if (!Double.isFinite(meters[i]) || !Double.isFinite(rpm[i]) || meters[i] <= 0 || rpm[i] < 0)
+                throw new IllegalArgumentException("Calibration values must be finite, distances > 0 and rpm >= 0");
         for (int i = 1; i < meters.length; i++)
             if (meters[i] <= meters[i - 1])
                 throw new IllegalArgumentException("Calibration distances must be strictly increasing");

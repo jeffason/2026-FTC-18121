@@ -26,6 +26,5 @@ android {
 
 dependencies {
     implementation project(':FtcRobotController')
-    // Laptop unit tests for pure-Java robot logic (see src/test/java/.../shooter). Run: ./gradlew :TeamCode:testDebugUnitTest
     testImplementation 'junit:junit:4.13.2'
 }

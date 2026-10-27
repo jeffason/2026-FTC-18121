@@ -1,0 +1,5 @@
+[
+  { "ruleId": "STRUCT-NO-DUPLICATE-LOGIC", "subject": "TeamCode/sim/shooter-brain-testbed.html",
+    "reason": "The browser sim is a deliberate JavaScript twin of the Java stages so students can run it with no toolchain; the spec string is the shared contract and ShooterBrainTest.everyRegisteredStageParsesWithDefaults plus the sim's own parser round-trip guard both sides. Decided 2026-10-26.",
+    "acceptedBy": "jeffason", "at": "2026-10-26" }
+]

@@ -33,7 +33,6 @@ public class ShooterTeleOp extends OpMode {
     private ShooterBrain brain;
     private final Gamepad prev = new Gamepad();
     private int tunableIndex = 0;
-    private boolean calibrationFromHub;
     private long feedUntilMs = 0;
 
     private static final double FEEDER_REST = 0.0, FEEDER_PUSH = 0.6;
@@ -53,11 +52,11 @@ public class ShooterTeleOp extends OpMode {
         feeder = hardwareMap.tryGet(Servo.class, "feeder");
         battery = hardwareMap.voltageSensor.iterator().hasNext() ? hardwareMap.voltageSensor.iterator().next() : null;
 
-        calibrationFromHub = CalibrationStore.loadIntoConfig();
+        CalibrationStore.loadIntoConfig();
         ranger = new LimelightRanger(hardwareMap);
         brain = new ShooterBrain(CalibrationTable.fromConfig(), ShooterStages.defaultPipeline());
 
-        telemetry.addData("Calibration", calibrationFromHub ? "loaded from hub" : "ShooterConfig defaults");
+        telemetry.addData("Calibration", CalibrationStore.lastLoadMessage());
         telemetry.addData("Feeder", feeder == null ? "none configured (feed by hand)" : "servo ready");
     }
 
@@ -94,6 +93,7 @@ public class ShooterTeleOp extends OpMode {
         prev.copy(gamepad1);
 
         // --- screen ---
+        telemetry.addData("Limelight", ranger.isConnected() ? "connected" : "NOT CONNECTED (check USB and the camera's pipeline)");
         telemetry.addData("Range", brain.hasTarget() ? String.format("%.2f m", brain.getRangeMeters()) : "no target");
         telemetry.addData("Flywheel", "table %.0f  target %.0f  actual %.0f rpm", d.tableRpm, d.targetRpm, actualRpm);
         telemetry.addData("Shot", shotStatus);
@@ -121,27 +121,35 @@ public class ShooterTeleOp extends OpMode {
     }
 
     private void tweakMenu() {
-        List<Tunable> tunables = brain.getPipeline().liveTunables();
+        // The menu walks every stage's tunables, enabled or not, so LB can switch any stage on or off.
+        List<Tunable> tunables = brain.getPipeline().allTunables();
         if (gamepad1.dpad_right && !prev.dpad_right) tunableIndex++;
         if (gamepad1.dpad_left && !prev.dpad_left) tunableIndex--;
-        if (!tunables.isEmpty()) {
-            tunableIndex = ((tunableIndex % tunables.size()) + tunables.size()) % tunables.size();
-            Tunable t = tunables.get(tunableIndex);
-            if (gamepad1.dpad_up && !prev.dpad_up) t.nudge(+1);
-            if (gamepad1.dpad_down && !prev.dpad_down) t.nudge(-1);
+        Tunable selected = selectedTunable(tunables);
+        if (selected != null) {
+            if (gamepad1.dpad_up && !prev.dpad_up) selected.nudge(+1);
+            if (gamepad1.dpad_down && !prev.dpad_down) selected.nudge(-1);
         }
         if (gamepad1.left_bumper && !prev.left_bumper) {
-            // Toggle the stage that owns the selected tunable (or the first disabled stage if none are live).
             Pipeline pipe = brain.getPipeline();
-            Stage target = tunables.isEmpty() ? null : pipe.ownerOf(tunables.get(tunableIndex));
-            if (target == null) for (Stage st : pipe.stages()) if (!pipe.isEnabled(st)) { target = st; break; }
+            Stage target = selected == null ? null : pipe.ownerOf(selected);
+            if (target == null && !pipe.stages().isEmpty()) target = pipe.stages().get(0);
             if (target != null) pipe.toggle(target);
         }
     }
 
+    private Tunable selectedTunable(List<Tunable> tunables) {
+        if (tunables.isEmpty()) return null;
+        tunableIndex = ((tunableIndex % tunables.size()) + tunables.size()) % tunables.size();
+        return tunables.get(tunableIndex);
+    }
+
     private String tuneLine() {
-        List<Tunable> t = brain.getPipeline().liveTunables();
-        if (t.isEmpty()) return "no live tunables (LB enables a stage)";
-        return "> " + t.get(tunableIndex) + "  (dpad L/R select, U/D nudge, LB toggle)";
+        List<Tunable> all = brain.getPipeline().allTunables();
+        Tunable t = selectedTunable(all);
+        if (t == null) return "pipeline has no tunables";
+        Stage owner = brain.getPipeline().ownerOf(t);
+        String state = owner != null && brain.getPipeline().isEnabled(owner) ? "on" : "OFF";
+        return "> " + (owner == null ? "" : owner.name() + " [" + state + "] ") + t + "  (dpad L/R select, U/D nudge, LB toggle)";
     }
 }
