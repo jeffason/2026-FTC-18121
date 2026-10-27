@@ -26,6 +26,7 @@ public final class LimelightRanger {
     private long lastStamp = Long.MIN_VALUE;
     private LLResult latest;
     private String lastStatus = "no result yet";
+    private long lastFrameMs = 0;
 
     public LimelightRanger(HardwareMap hw) {
         this(hw, ShooterConfig.LIMELIGHT, ShooterConfig.LIMELIGHT_PIPELINE, ShooterConfig.TARGET_TAG_IDS);
@@ -43,7 +44,10 @@ public final class LimelightRanger {
     public LLResult latestResult() { return latest; }
 
     /** One line for the Driver Station: connection, then what the last poll produced. */
-    public String status() { return (isConnected() ? "" : "NOT CONNECTED · ") + lastStatus; }
+    public String status() {
+        String age = lastFrameMs == 0 ? "" : " · " + (System.currentTimeMillis() - lastFrameMs) + " ms since a new frame";
+        return (isConnected() ? "" : "NOT CONNECTED · ") + lastStatus + age;
+    }
 
     /**
      * Call every loop. Returns null when the Limelight has not produced a new frame since the
@@ -57,6 +61,7 @@ public final class LimelightRanger {
         if (stamp == lastStamp) return null;
         lastStamp = stamp;
         latest = r;
+        lastFrameMs = System.currentTimeMillis();
 
         List<Double> out = new ArrayList<>();
         for (LLResultTypes.FiducialResult fr : r.getFiducialResults()) {

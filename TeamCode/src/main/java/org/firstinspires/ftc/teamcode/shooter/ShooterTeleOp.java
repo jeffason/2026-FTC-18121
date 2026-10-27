@@ -129,36 +129,46 @@ public class ShooterTeleOp extends OpMode {
         br.setPower((y + x - rx) / denom);
     }
 
-    private void tweakMenu() {
-        // The menu walks every stage's tunables, enabled or not, so LB can switch any stage on or off.
-        List<Tunable> tunables = brain.getPipeline().allTunables();
-        if (gamepad1.dpad_right && !prev.dpad_right) tunableIndex++;
-        if (gamepad1.dpad_left && !prev.dpad_left) tunableIndex--;
-        Tunable selected = selectedTunable(tunables);
-        if (selected != null) {
-            if (gamepad1.dpad_up && !prev.dpad_up) selected.nudge(+1);
-            if (gamepad1.dpad_down && !prev.dpad_down) selected.nudge(-1);
-        }
-        if (gamepad1.left_bumper && !prev.left_bumper) {
-            Pipeline pipe = brain.getPipeline();
-            Stage target = selected == null ? null : pipe.ownerOf(selected);
-            if (target == null && !pipe.stages().isEmpty()) target = pipe.stages().get(0);
-            if (target != null) pipe.toggle(target);
-        }
+    /** One row of the gamepad menu: a stage, and one of its tunables (null for a stage that has none). */
+    private static final class MenuItem {
+        final Stage stage; final Tunable tunable;
+        MenuItem(Stage stage, Tunable tunable) { this.stage = stage; this.tunable = tunable; }
     }
 
-    private Tunable selectedTunable(List<Tunable> tunables) {
-        if (tunables.isEmpty()) return null;
-        tunableIndex = ((tunableIndex % tunables.size()) + tunables.size()) % tunables.size();
-        return tunables.get(tunableIndex);
+    /** Every stage appears at least once, enabled or not, so LB can switch any of them. */
+    private List<MenuItem> menuItems() {
+        List<MenuItem> items = new java.util.ArrayList<>();
+        for (Stage s : brain.getPipeline().stages()) {
+            if (s.tunables().isEmpty()) items.add(new MenuItem(s, null));
+            for (Tunable t : s.tunables()) items.add(new MenuItem(s, t));
+        }
+        return items;
+    }
+
+    private MenuItem selectedItem(List<MenuItem> items) {
+        if (items.isEmpty()) return null;
+        tunableIndex = ((tunableIndex % items.size()) + items.size()) % items.size();
+        return items.get(tunableIndex);
+    }
+
+    private void tweakMenu() {
+        List<MenuItem> items = menuItems();
+        if (gamepad1.dpad_right && !prev.dpad_right) tunableIndex++;
+        if (gamepad1.dpad_left && !prev.dpad_left) tunableIndex--;
+        MenuItem sel = selectedItem(items);
+        if (sel == null) return;
+        if (sel.tunable != null) {
+            if (gamepad1.dpad_up && !prev.dpad_up) sel.tunable.nudge(+1);
+            if (gamepad1.dpad_down && !prev.dpad_down) sel.tunable.nudge(-1);
+        }
+        if (gamepad1.left_bumper && !prev.left_bumper) brain.getPipeline().toggle(sel.stage);
     }
 
     private String tuneLine() {
-        List<Tunable> all = brain.getPipeline().allTunables();
-        Tunable t = selectedTunable(all);
-        if (t == null) return "pipeline has no tunables";
-        Stage owner = brain.getPipeline().ownerOf(t);
-        String state = owner != null && brain.getPipeline().isEnabled(owner) ? "on" : "OFF";
-        return "> " + (owner == null ? "" : owner.name() + " [" + state + "] ") + t + "  (dpad L/R select, U/D nudge, LB toggle)";
+        MenuItem sel = selectedItem(menuItems());
+        if (sel == null) return "pipeline has no stages";
+        String state = brain.getPipeline().isEnabled(sel.stage) ? "on" : "OFF";
+        String what = sel.tunable == null ? "(no tunables)" : sel.tunable.toString();
+        return "> " + sel.stage.name() + " [" + state + "] " + what + "  (dpad L/R select, U/D nudge, LB toggle)";
     }
 }

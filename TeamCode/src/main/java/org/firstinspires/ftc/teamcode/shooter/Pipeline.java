@@ -80,6 +80,9 @@ public final class Pipeline {
         return hold;
     }
 
+    /** Marks every stage's effect as waiting for a target, so telemetry never shows a verdict from an earlier target. */
+    public void noTarget() { for (Stage s : stages) effects.put(s, isEnabled(s) ? "no target" : "off"); }
+
     /** What each stage did on the most recent run, in pipeline order. */
     public Map<Stage, String> lastEffects() { return Collections.unmodifiableMap(effects); }
 

@@ -1,18 +1,101 @@
 {
   "conventions": {
-    "id": "ftc18121.conventions", "version": "2026.10", "owner": "software mentors",
+    "id": "ftc18121.conventions",
+    "version": "2026.10",
+    "owner": "software mentors",
     "rules": [
-      { "id": "FTC-SIM-JAVA-LOCKSTEP", "statement": "Every shooter stage exists twice with the same name, tunable names and math: as a class registered in ShooterStages.java and as an entry in the DEFS object of TeamCode/sim/shooter-brain-testbed.html. A stage added or changed in one place is added or changed in the other in the same change.", "source": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/shooter/README.md" },
-      { "id": "FTC-STAGE-PURE", "statement": "Pipeline stages (RangeFilter, VelocityModifier, FireGate) touch no hardware, no HardwareMap, no clock and never sleep; everything they need arrives in RangeFrame or ShotContext.", "source": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/shooter/Stage.java" },
-      { "id": "FTC-SPEC-IS-CONTRACT", "statement": "The pipeline spec string (ShooterConfig.PIPELINE) is the only hand-off between the sim and the robot; Pipeline.fromSpec(Pipeline.toSpec(p)) must reproduce p, and a spec the sim exports must parse on the robot.", "source": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/shooter/Pipeline.java" },
-      { "id": "FTC-BRAIN-NO-SDK", "statement": "ShooterBrain, Pipeline, CalibrationTable and the stages import nothing from com.qualcomm or org.firstinspires so they run under plain JUnit on a laptop.", "source": "TeamCode/src/test/java/org/firstinspires/ftc/teamcode/shooter/ShooterBrainTest.java" }
+      {
+        "id": "FTC-SIM-JAVA-LOCKSTEP",
+        "statement": "Every shooter stage exists twice with the same name, tunable names and math: as a class registered in ShooterStages.java and as an entry in the DEFS object of TeamCode/sim/shooter-brain-testbed.html. A stage added or changed in one place is added or changed in the other in the same change.",
+        "source": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/shooter/README.md"
+      },
+      {
+        "id": "FTC-STAGE-PURE",
+        "statement": "Pipeline stages (RangeFilter, VelocityModifier, FireGate) touch no hardware, no HardwareMap, no clock and never sleep; everything they need arrives in RangeFrame or ShotContext.",
+        "source": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/shooter/Stage.java"
+      },
+      {
+        "id": "FTC-SPEC-IS-CONTRACT",
+        "statement": "The pipeline spec string (ShooterConfig.PIPELINE) is the only hand-off between the sim and the robot; Pipeline.fromSpec(Pipeline.toSpec(p)) must reproduce p, and a spec the sim exports must parse on the robot.",
+        "source": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/shooter/Pipeline.java"
+      },
+      {
+        "id": "FTC-BRAIN-NO-SDK",
+        "statement": "ShooterBrain, Pipeline, CalibrationTable and the stages import nothing from com.qualcomm or org.firstinspires so they run under plain JUnit on a laptop.",
+        "source": "TeamCode/src/test/java/org/firstinspires/ftc/teamcode/shooter/ShooterBrainTest.java"
+      }
     ]
   },
   "failure": {
-    "id": "ftc18121.failure", "version": "2026.10", "owner": "software mentors",
+    "id": "ftc18121.failure",
+    "version": "2026.10",
+    "owner": "software mentors",
     "rules": [
-      { "id": "FTC-NEVER-FIRE-BLIND", "statement": "The brain never reports fire=true before a goal tag has been observed, and a stage returning NaN, infinity or a negative value is ignored rather than propagated into the flywheel target.", "source": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/shooter/Pipeline.java" },
-      { "id": "FTC-STALE-DATA-IS-NOT-FRESH", "statement": "A Limelight result that has not changed since the last poll is not fed to the brain again; duplicated frames would bias every rolling filter.", "source": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/shooter/LimelightRanger.java" }
+      {
+        "id": "FTC-NEVER-FIRE-BLIND",
+        "statement": "The brain never reports fire=true before a goal tag has been observed, and a stage returning NaN, infinity or a negative value is ignored rather than propagated into the flywheel target.",
+        "source": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/shooter/Pipeline.java"
+      },
+      {
+        "id": "FTC-STALE-DATA-IS-NOT-FRESH",
+        "statement": "A Limelight result that has not changed since the last poll is not fed to the brain again; duplicated frames would bias every rolling filter.",
+        "source": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/shooter/LimelightRanger.java"
+      }
+    ]
+  },
+  "copy": {
+    "id": "ftc18121.copy",
+    "version": "2026.10",
+    "owner": "software mentors",
+    "optOut": [
+      {
+        "id": "STRUCT-USER-COPY-NO-EXPLANATORY-PROSE",
+        "reason": "The copy in this repository is teaching material: a kickoff deck (docs/kickoff-deck) and a classroom simulator (TeamCode/sim). Its job is to explain how the shooter works, so a rule that forbids explanatory prose forbids the material."
+      },
+      {
+        "id": "COPY-ONLY-THE-WORDS-THE-JOB-NEEDS",
+        "reason": "Teaching copy repeats a term on purpose (glossary, then use) and shows worked examples; the product-copy brevity rule would strip the scaffolding first-year students need. Concision is still checked by COPY-TEACH-CONCISE."
+      },
+      {
+        "id": "COPY-NO-JUSTIFICATION",
+        "reason": "A stage description that says what a stage fixes and what it costs is the lesson; students are asked to write exactly that sentence in the challenge."
+      },
+      {
+        "id": "COPY-NO-PLAN",
+        "reason": "The deck's closing section is a plan by design: it tells students what to do before calibration night."
+      }
+    ],
+    "rules": [
+      {
+        "id": "COPY-TEACH-FAITHFUL",
+        "statement": "Every number, file name, command, tag ID, stage name and test count in teaching copy matches the repository as it stands (README.md in the shooter package, ShooterStages.java, ShooterConfig.java, ShooterBrainTest.java, parity-vectors.txt). A finding wherever one is stale, rounded up or invented.",
+        "source": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/shooter/README.md"
+      },
+      {
+        "id": "COPY-TEACH-DEFINE-BEFORE-USE",
+        "statement": "A technical term in the deck is given a plain-words meaning on the slide where it first appears, or on a glossary slide that comes earlier in deck.json order. A finding wherever a first-year student would meet a term before its meaning.",
+        "source": "docs/kickoff-deck/deck.json"
+      },
+      {
+        "id": "COPY-TEACH-CLEAR",
+        "statement": "A reader who knows nothing about shooters follows each slide or sim panel on one read: one idea per slide, sentences under about twenty-five words, no sentence that needs the next one to make sense.",
+        "source": "docs/kickoff-deck/README.md"
+      },
+      {
+        "id": "COPY-TEACH-CONCISE",
+        "statement": "Nothing is said twice within a slide or panel, and no sentence is filler (an opener that announces the topic, a closer that restates it). Repetition across slides is allowed when the second use is a glossary term being applied.",
+        "source": "docs/kickoff-deck/README.md"
+      },
+      {
+        "id": "COPY-TEACH-VOICE",
+        "statement": "Teaching copy sounds like a mentor talking to this team: direct address, concrete nouns from this robot and this field, no marketing register, no exclamation, no rhetorical question answered in the next line.",
+        "source": "docs/kickoff-deck/README.md"
+      },
+      {
+        "id": "COPY-TEACH-NEXT-ACTION",
+        "statement": "Each section of the deck (deck.json sections) ends with something the student does, not only something they now know.",
+        "source": "docs/kickoff-deck/deck.json"
+      }
     ]
   }
 }

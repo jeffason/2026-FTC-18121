@@ -340,7 +340,8 @@ function fromSpec(spec) {
       if (!kv.trim()) continue;
       const parts = kv.split('='); if (parts.length !== 2) throw new Error(`Expected name=value in: ${raw.trim()}`);
       const k = parts[0].trim(); if (!(k in s.def.tun)) throw new Error(`Stage ${name} has no tunable '${k}'`);
-      s.tun[k] = snap(parseFloat(parts[1]), s.def.tun[k]);
+      const v = parts[1].trim(); if (!/^-?\d+(\.\d+)?$/.test(v)) throw new Error(`'${v}' is not a number (in ${k}=${v})`);
+      s.tun[k] = snap(parseFloat(v), s.def.tun[k]);
     }
     if (out.length >= MAX_STAGES) throw new Error(`At most ${MAX_STAGES} stages`);
     out.push(s);
@@ -735,7 +736,8 @@ hoverOn(cvRange, v => hoverRange = v); hoverOn(cvWheel, v => hoverWheel = v);
 readBench(); renderPalette();
 { const pv = runParityVectors(); const el = $('parity'); el.textContent = pv.fails.length ? `parity ${pv.n - pv.fails.length}/${pv.n} FAIL` : `parity ${pv.n}/${pv.n} ok`; if (pv.fails.length) { el.style.color = 'var(--bad)'; el.title = pv.fails.join('\n'); console.warn('parity vector failures:\n' + pv.fails.join('\n')); } }
 let saved = null; try { saved = localStorage.getItem('shooter-testbed-spec'); } catch (e) { saved = null; }
-if (saved === null || !loadSpec(saved)) { yours.stages = []; pipelineChanged(); }
+if (saved === null) { yours.stages = []; pipelineChanged(); }
+else if (!loadSpec(saved)) { yours.stages = []; renderStages(); renderExport(''); $('specIn').value = saved; $('specErr').textContent += '  Your saved pipeline is kept in the box above: fix it and press Load, or press Empty to discard it.'; }
 renderStats(baseline, $('tilesB')); renderStats(ref, $('tilesR')); renderStats(yours, $('tilesY'));
 log('t', 'bench ready · table ' + CAL.map(c => `${c.d}m→${c.rpm.toFixed(0)}`).join('  '));
 let acc = 0, last = performance.now(), statTimer = 0, fxTimer = 0;

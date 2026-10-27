@@ -297,6 +297,80 @@ public class ShooterBrainTest {
         assertTrue("sim export template lacks: " + missing, missing.isEmpty());
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void nonNumericTunableValueIsRejected() { Pipeline.fromSpec("ManualOffset(offsetRpm=100rpm)", ShooterStages.REGISTRY); }
+
+    /**
+     * Runs the sim's own JavaScript (its stage code and parity runner) under node and requires zero
+     * failures. Skipped, not passed, when node is not installed on this machine.
+     */
+    @Test public void simJavaScriptPassesTheParityVectors() throws Exception {
+        String node = findNode();
+        org.junit.Assume.assumeTrue("node is not installed; JS parity not checked here", node != null);
+        String js = extractSimScript();
+        int a = js.indexOf("const clamp"), b = js.indexOf("// ====================== bench + brains");
+        int c = js.indexOf("// The three pipeline passes"), d = js.indexOf("function observe(b, frame)");
+        assertTrue("sim script layout changed; update the slice markers", a > 0 && b > a && c > b && d > c);
+        String program = js.substring(a, b) + "\n" + js.substring(c, d)
+                + "\nconst r = runParityVectors(); console.log(JSON.stringify({ n: r.n, fails: r.fails }));";
+        String out = runNode(node, program);
+        assertTrue("sim parity output: " + out, out.contains("\"fails\":[]"));
+        assertTrue("sim ran too few vectors: " + out, out.matches("(?s).*\"n\":(2[0-9]|[3-9][0-9]).*"));
+    }
+
+    /** Renders the sim's Copy Java output for a real spec and compiles it with javac. Skipped when node is absent. */
+    @Test public void simExportCompiles() throws Exception {
+        String node = findNode();
+        org.junit.Assume.assumeTrue("node is not installed; export not rendered here", node != null);
+        javax.tools.JavaCompiler javac = javax.tools.ToolProvider.getSystemJavaCompiler();
+        org.junit.Assume.assumeTrue("no system javac available", javac != null);
+        String js = extractSimScript();
+        int p = js.indexOf("const G = 9.81"), q = js.indexOf("function idealLanding");
+        int a = js.indexOf("const java = `"), b = js.indexOf("`;", a);
+        assertTrue("sim script layout changed; update the slice markers", p >= 0 && q > p && a > 0 && b > a);
+        String template = js.substring(a + "const java = ".length(), b + 1);
+        String program = js.substring(p, q) + "\nconst spec = " + json(ShooterConfig.PIPELINE) + ";\nconst java = " + template + ";\nprocess.stdout.write(java);";
+        String source = runNode(node, program);
+        assertTrue("export does not look like ShooterConfig: " + source.substring(0, Math.min(200, source.length())), source.contains("public final class ShooterConfig"));
+        java.nio.file.Path dir = java.nio.file.Files.createTempDirectory("shooter-export");
+        java.nio.file.Path file = dir.resolve("ShooterConfig.java");
+        java.nio.file.Files.write(file, source.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        java.io.ByteArrayOutputStream err = new java.io.ByteArrayOutputStream();
+        int rc = javac.run(null, null, err, "-d", dir.toString(), "-nowarn", file.toString());
+        assertEquals("exported ShooterConfig.java does not compile:\n" + err, 0, rc);
+    }
+
+    private static String findNode() {
+        for (String c : new String[] { "node", "/opt/homebrew/bin/node", "/usr/local/bin/node", "/usr/bin/node" }) {
+            try {
+                Process pr = new ProcessBuilder(c, "--version").redirectErrorStream(true).start();
+                if (pr.waitFor() == 0) return c;
+            } catch (Exception ignored) { /* try the next candidate */ }
+        }
+        return null;
+    }
+
+    private static String runNode(String node, String program) throws Exception {
+        java.nio.file.Path f = java.nio.file.Files.createTempFile("sim-check", ".js");
+        java.nio.file.Files.write(f, program.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        Process pr = new ProcessBuilder(node, f.toString()).redirectErrorStream(true).start();
+        java.io.ByteArrayOutputStream buf = new java.io.ByteArrayOutputStream();   // Java 8 target: no InputStream.readAllBytes
+        byte[] chunk = new byte[8192];
+        try (java.io.InputStream in = pr.getInputStream()) { int n; while ((n = in.read(chunk)) > 0) buf.write(chunk, 0, n); }
+        String out = new String(buf.toByteArray(), java.nio.charset.StandardCharsets.UTF_8);
+        assertEquals("node failed:\n" + out, 0, pr.waitFor());
+        return out;
+    }
+
+    private static String extractSimScript() throws java.io.IOException {
+        String html = readRepoFile("sim/shooter-brain-testbed.html");
+        int a = html.indexOf("<script>"), b = html.lastIndexOf("</script>");
+        assertTrue(a > 0 && b > a);
+        return html.substring(a + "<script>".length(), b);
+    }
+
+    private static String json(String s) { return "\"" + s.replace("\\", "\\\\").replace("\"", "\\\"") + "\""; }
+
     private static java.util.Map<String, Double> kv(String input) {
         java.util.Map<String, Double> out = new java.util.HashMap<>();
         for (String tok : input.split("\\s+")) { String[] p = tok.split("="); out.put(p[0], Double.parseDouble(p[1])); }

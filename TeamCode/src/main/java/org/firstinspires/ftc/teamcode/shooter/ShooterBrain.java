@@ -79,7 +79,7 @@ public final class ShooterBrain {
 
     /** Should we fire right now, given the measured flywheel speed? */
     public Decision evaluate(double actualRpm, long nowMs, double batteryVolts) {
-        if (!hasTarget()) return new Decision(false, "no target yet", Double.NaN, Double.NaN, Double.NaN);
+        if (!hasTarget()) { pipeline.noTarget(); return new Decision(false, "no target yet", Double.NaN, Double.NaN, Double.NaN); }
         double tableRpm = getTableRpm();
         double target = pipeline.adjustRpm(context(tableRpm, Double.NaN, actualRpm, nowMs, batteryVolts), tableRpm);
         String hold = pipeline.checkGates(context(tableRpm, target, actualRpm, nowMs, batteryVolts));
