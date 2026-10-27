@@ -1,0 +1,30 @@
+<section id="primer-table" data-transition="fade" style="background:#f4f5f7;color:#15181d;font-family:'Barlow', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
+<p style="font-family:'JetBrains Mono', monospace;font-size:26px;color:#7b828c;letter-spacing:4px;text-transform:uppercase">Shooter 101</p>
+<h2 style="font-family:'Barlow Condensed', Arial, sans-serif;font-size:80px;font-weight:600;line-height:1.05">The velocity table</h2>
+<div style="display:flex;gap:64px;align-items:center">
+<table style="width:640px;font-size:32px;color:#15181d;border:1px solid #d3d6dc;background:#ffffff;font-variant-numeric:tabular-nums">
+<tr style="background:#e9ebef"><th style="width:50%;text-align:left;padding:18px 28px">Range</th><th style="width:50%;text-align:left">Flywheel</th></tr>
+<tr><td>1.0 m</td><td>1750 rpm</td></tr>
+<tr><td>2.0 m</td><td>2080 rpm</td></tr>
+<tr style="background:#dbe8f8"><td style="color:#2a78d6">2.5 m</td><td style="color:#2a78d6">2255 rpm</td></tr>
+<tr><td>3.0 m</td><td>2430 rpm</td></tr>
+<tr><td>4.0 m</td><td>2750 rpm</td></tr>
+</table>
+<div style="flex:1;display:flex;flex-direction:column;gap:28px">
+<div style="display:flex;flex-direction:column;gap:10px">
+<h3 style="font-size:38px;font-weight:600">Measured points</h3>
+<p style="font-size:28px;color:#4d545e;line-height:1.45">We park the robot at a few distances, change the RPM until balls go in, and write down what worked. The white rows are measurements.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:10px">
+<h3 style="font-size:38px;font-weight:600;color:#2a78d6">In between: interpolation</h3>
+<p style="font-size:28px;color:#4d545e;line-height:1.45">At 2.5 m we are halfway between 2 m and 3 m, so we use halfway between 2080 and 2430. The blue row was never measured. The code draws a straight line between neighbours.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:10px">
+<h3 style="font-size:38px;font-weight:600">Why not a formula?</h3>
+<p style="font-size:28px;color:#4d545e;line-height:1.45">A formula needs the ball's weight, air drag and how much the wheel squeezes it. A table just needs a tape measure and an afternoon.</p>
+</div>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;font-size:24px;color:#7b828c">Example numbers from the simulator. The real table comes from calibration night on the robot.</p>
+<aside>Ask: what RPM for 3.5 m? Students should land on about 2590. That is the whole idea. Then ask what happens if the range measurement is wrong by half a metre: they look up the wrong row.</aside>
+</section>

@@ -1,0 +1,28 @@
+<section id="workflow" data-transition="fade" style="background:#f4f5f7;color:#15181d;font-family:'Barlow', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<h2 style="font-family:'Barlow Condensed', Arial, sans-serif;font-size:80px;font-weight:600;line-height:1.05">From sim to robot</h2>
+<div style="display:flex;gap:28px">
+<div style="flex:1;display:flex;flex-direction:column;gap:16px;background:#ffffff;padding:36px;border:1px solid #d3d6dc;border-radius:12px">
+<p style="font-family:'JetBrains Mono', monospace;font-size:24px;color:#2a78d6;font-weight:500">STEP 1</p>
+<h3 style="font-size:36px;font-weight:600;line-height:1.15">Build it in the sim</h3>
+<p style="font-size:27px;color:#4d545e;line-height:1.45">Add stages, tune, run 60 s in Wander. Record hit rate and shots per minute.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:16px;background:#ffffff;padding:36px;border:1px solid #d3d6dc;border-radius:12px">
+<p style="font-family:'JetBrains Mono', monospace;font-size:24px;color:#2a78d6;font-weight:500">STEP 2</p>
+<h3 style="font-size:36px;font-weight:600;line-height:1.15">Prove it on the laptop</h3>
+<p style="font-size:27px;color:#4d545e;line-height:1.45">New stage? Add a test. Then run the suite. Green in seconds, no robot.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:16px;background:#ffffff;padding:36px;border:1px solid #d3d6dc;border-radius:12px">
+<p style="font-family:'JetBrains Mono', monospace;font-size:24px;color:#2a78d6;font-weight:500">STEP 3</p>
+<h3 style="font-size:36px;font-weight:600;line-height:1.15">Calibrate once</h3>
+<p style="font-size:27px;color:#4d545e;line-height:1.45">Run Shooter: Calibration. Five or six distances, A to record, Y to save. It prints the Java for the table.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:16px;background:#ffffff;padding:36px;border:1px solid #d3d6dc;border-radius:12px">
+<p style="font-family:'JetBrains Mono', monospace;font-size:24px;color:#2a78d6;font-weight:500">STEP 4</p>
+<h3 style="font-size:36px;font-weight:600;line-height:1.15">Drive it</h3>
+<p style="font-size:27px;color:#4d545e;line-height:1.45">Shooter: TeleOp. Right trigger spins, right bumper requests a shot, the screen shows every stage's verdict.</p>
+</div>
+</div>
+<p style="font-family:'JetBrains Mono', monospace;font-size:30px;background:#1e2126;color:#eceef1;padding:28px 40px;border-radius:12px">./gradlew :TeamCode:testDebugUnitTest</p>
+<p style="position:absolute;left:128px;bottom:64px;font-size:24px;color:#7b828c">Export from the sim, paste over ShooterConfig.java, build, deploy. The calibration table from the robot replaces the sim's placeholder.</p>
+<aside>The calibration OpMode is what makes the robot right. The sim's physics are placeholders. Say this twice: the sim is for the logic, the robot is for the numbers.</aside>
+</section>

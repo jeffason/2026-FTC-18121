@@ -1,0 +1,14 @@
+<section id="sim" data-transition="fade" style="background:#f4f5f7;color:#15181d;font-family:'Barlow', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
+<h2 style="font-family:'Barlow Condensed', Arial, sans-serif;font-size:80px;font-weight:600;line-height:1.05">The simulator</h2>
+<p style="font-size:32px;color:#4d545e;line-height:1.4;width:1500px">One HTML file, no install. Three brains read the same noisy tag stream: a baseline, a hidden mentor reference, and yours.</p>
+<table style="font-size:28px;color:#15181d;border:1px solid #d3d6dc;border-radius:8px;background:#ffffff">
+<tr style="background:#e9ebef"><th style="width:28%;text-align:left;padding:18px 24px">Panel</th><th style="width:72%;text-align:left">What you do there</th></tr>
+<tr><td>Bench conditions</td><td>Hold a distance or wander 1 to 5 m. Dial up camera noise, air drag, spin-up time, feeder cadence.</td></tr>
+<tr><td>Side view</td><td>Watch trajectories land. Green dot inside the opening is a hit. Four squares show which tags resolved this frame.</td></tr>
+<tr><td>Your pipeline</td><td>Add stages from the palette, toggle them, drag sliders, reorder. Each card shows its live input and output and its code.</td></tr>
+<tr><td>Stats and charts</td><td>Hit rate, shots per minute, range error, time held, for all three brains. Range and flywheel over the last 12 s.</td></tr>
+<tr><td>Export</td><td>Copy the spec, or a complete ShooterConfig.java, into TeamCode.</td></tr>
+</table>
+<p style="position:absolute;left:128px;bottom:64px;font-size:24px;color:#7b828c">Open TeamCode/sim/shooter-brain-testbed.html in any browser. Your pipeline is remembered in that browser.</p>
+<aside>Demo this live if you can. Start with the Empty preset so students see the baseline and your brain match. Add TagMedian and watch the range chart tighten. Add VelocityToleranceGate and watch time held go up while misses go down. Do not reveal the reference yet.</aside>
+</section>

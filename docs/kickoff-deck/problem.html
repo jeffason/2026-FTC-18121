@@ -1,0 +1,23 @@
+<section id="problem" data-transition="fade" style="background:#f4f5f7;color:#15181d;font-family:'Barlow', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:56px">
+<h2 style="font-family:'Barlow Condensed', Arial, sans-serif;font-size:80px;font-weight:600;line-height:1.05">A good table is not enough</h2>
+<p style="font-size:34px;color:#4d545e;line-height:1.4;width:1500px">We measure distance to the goal, look up the flywheel speed that distance needs, and shoot. Three things break that on a real field.</p>
+<div style="display:flex;gap:32px">
+<div style="flex:1;display:flex;flex-direction:column;gap:16px;background:#ffffff;padding:40px;border:1px solid #d3d6dc;border-radius:12px">
+<p style="font-family:'JetBrains Mono', monospace;font-size:24px;color:#2a78d6;font-weight:500">1 · RANGE NOISE</p>
+<h3 style="font-size:40px;font-weight:600;line-height:1.15">The camera guesses</h3>
+<p style="font-size:28px;color:#4d545e;line-height:1.4">Tags are 3.25 inches wide. At 5 m a single tag's range wobbles by tens of centimetres, and now and then it is simply wrong.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:16px;background:#ffffff;padding:40px;border:1px solid #d3d6dc;border-radius:12px">
+<p style="font-family:'JetBrains Mono', monospace;font-size:24px;color:#6250d6;font-weight:500">2 · SPIN-UP</p>
+<h3 style="font-size:40px;font-weight:600;line-height:1.15">The wheel lags</h3>
+<p style="font-size:28px;color:#4d545e;line-height:1.4">Every shot steals speed from the flywheel. Feed the next ball too early and it leaves slow and falls short.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:16px;background:#ffffff;padding:40px;border:1px solid #d3d6dc;border-radius:12px">
+<p style="font-family:'JetBrains Mono', monospace;font-size:24px;color:#c98500;font-weight:500">3 · DROPOUTS</p>
+<h3 style="font-size:40px;font-weight:600;line-height:1.15">The goal disappears</h3>
+<p style="font-size:28px;color:#4d545e;line-height:1.4">A robot or a hand blocks the tags for half a second. If we moved meanwhile, we are aiming at where the goal used to be.</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;font-size:24px;color:#7b828c">Each problem gets its own fix. That is the whole design.</p>
+<aside>Ask: what does the baseline do in each case? It shoots anyway. The three colors here are the three kinds of stage you will see on the next slides: blue for range, violet for velocity, amber for gates.</aside>
+</section>

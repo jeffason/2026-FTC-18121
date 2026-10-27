@@ -1,0 +1,668 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Standalone copy of the Shooter Brain Testbed. Open this file in a browser (double-click). No server or build needed. -->
+<!-- The published copy lives at https://claude.ai/artifact/XGNJu4H8anUFcdKBQHtyu9 ; this file is the one students edit (see the DEFS object in the script). -->
+<style>html{color-scheme:light dark}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Shooter Brain Testbed</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: bench conditions on top, field view beside the pipeline builder, three stat columns, telemetry charts, export, challenge. */
+:root {
+  --bg: #f3f4f6; --panel: #ffffff; --panel-2: #e9ebef; --line: #d3d6dc;
+  --fg: #15181d; --fg-2: #4d545e; --fg-3: #7b828c;
+  --accent: #2a78d6; --accent-soft: rgba(42,120,214,.14);   /* your brain */
+  --base: #eb6834; --base-soft: rgba(235,104,52,.14);       /* baseline */
+  --ref: #1baf7a;                                           /* mentor reference */
+  --good: #0ca30c; --bad: #d03b3b;
+  --field: #e4e7ec; --ground: #b9bec7;
+  --display: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --body: "Barlow", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #15171b; --panel: #1e2126; --panel-2: #262a30; --line: #343941;
+    --fg: #eceef1; --fg-2: #b4bac4; --fg-3: #7f8792;
+    --accent: #3987e5; --accent-soft: rgba(57,135,229,.18); --base: #d95926; --base-soft: rgba(217,89,38,.2); --ref: #199e70;
+    --good: #0ca30c; --bad: #e66767; --field: #1a1d22; --ground: #3a404a; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #15171b; --panel: #1e2126; --panel-2: #262a30; --line: #343941;
+  --fg: #eceef1; --fg-2: #b4bac4; --fg-3: #7f8792;
+  --accent: #3987e5; --accent-soft: rgba(57,135,229,.18); --base: #d95926; --base-soft: rgba(217,89,38,.2); --ref: #199e70;
+  --good: #0ca30c; --bad: #e66767; --field: #1a1d22; --ground: #3a404a; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 14px; line-height: 1.45;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 18px 40px; }
+.wrap { max-width: 1180px; margin: 0 auto; display: grid; gap: 14px; }
+h1 { font-family: var(--display); font-weight: 700; font-size: 30px; line-height: 1; margin: 0; letter-spacing: .01em; text-wrap: balance; }
+h2 { font-family: var(--display); font-weight: 600; font-size: 17px; margin: 0 0 8px; letter-spacing: .03em; text-transform: uppercase; color: var(--fg-2); }
+h3 { font-family: var(--display); font-weight: 600; font-size: 15px; margin: 0; letter-spacing: .02em; }
+.sub { color: var(--fg-2); margin: 4px 0 0; max-width: 68ch; }
+header { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; align-items: flex-end; }
+.team { font-family: var(--mono); font-size: 12px; color: var(--fg-3); letter-spacing: .08em; text-transform: uppercase; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 14px; min-width: 0; }
+.bench { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px 22px; align-items: start; }
+.ctl { display: grid; gap: 6px; }
+.ctl label, .lbl { font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--fg-2); display: flex; justify-content: space-between; gap: 8px; }
+.val { font-family: var(--mono); font-weight: 500; color: var(--fg); text-transform: none; letter-spacing: 0; font-variant-numeric: tabular-nums; }
+input[type=range] { width: 100%; accent-color: var(--accent); margin: 0; }
+input[type=text], select, button, textarea { font: inherit; }
+input[type=text] { width: 100%; padding: 6px 8px; border: 1px solid var(--line); border-radius: 4px; background: var(--panel-2); color: var(--fg); font-family: var(--mono); font-size: 12px; min-width: 0; }
+button { padding: 7px 12px; border: 1px solid var(--line); border-radius: 4px; background: var(--panel-2); color: var(--fg); cursor: pointer; font-weight: 600; }
+button:hover { border-color: var(--fg-3); }
+button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+button.sm { font-size: 12px; padding: 4px 8px; }
+button.icon { padding: 2px 7px; font-family: var(--mono); line-height: 1.4; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
+.seg button { border: 0; border-radius: 0; background: transparent; }
+.seg button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+.check { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 13px; }
+.check input { accent-color: var(--accent); width: 16px; height: 16px; margin: 0; }
+.main { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(320px, 1fr); gap: 14px; align-items: start; }
+@media (max-width: 860px) { .main { grid-template-columns: 1fr; } }
+canvas { display: block; width: 100%; max-width: 100%; }
+#field { aspect-ratio: 2.3 / 1; background: var(--field); border-radius: 4px; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12px; color: var(--fg-2); margin-top: 8px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.sw { width: 18px; height: 3px; border-radius: 2px; display: inline-block; }
+.sw.dash { background: repeating-linear-gradient(90deg, currentColor 0 4px, transparent 4px 7px); }
+.dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+/* pipeline builder */
+.builder { display: grid; gap: 12px; }
+.builder h2 { color: var(--accent); margin: 0; }
+.palette { display: flex; flex-wrap: wrap; gap: 6px; }
+.palette button { font-size: 12px; padding: 4px 9px; }
+.palette button::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 6px; background: var(--k); }
+.stages { display: grid; gap: 8px; }
+.stage { border: 1px solid var(--line); border-left: 4px solid var(--k); border-radius: 4px; padding: 8px 10px; display: grid; gap: 6px; background: var(--panel); }
+.stage.off { opacity: .6; }
+.stage .head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.stage .head .name { font-family: var(--mono); font-size: 13px; font-weight: 500; }
+.stage .head .kind { font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: var(--k); font-weight: 600; }
+.stage .head .sp { flex: 1; }
+.stage .desc { font-size: 12px; color: var(--fg-2); margin: 0; }
+.stage .tun { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 6px 14px; }
+.stage .tun label { font-size: 11px; font-family: var(--mono); display: flex; justify-content: space-between; color: var(--fg-2); }
+.stage .effect { font-family: var(--mono); font-size: 12px; font-variant-numeric: tabular-nums; }
+.stage .effect.hold { color: var(--bad); } .stage .effect.pass { color: var(--good); }
+.stage details { font-size: 12px; } .stage summary { cursor: pointer; color: var(--fg-3); }
+.stage pre { margin: 6px 0 0; font-family: var(--mono); font-size: 11px; line-height: 1.5; background: var(--panel-2); padding: 8px; border-radius: 4px; overflow-x: auto; white-space: pre; }
+.empty { border: 1px dashed var(--line); border-radius: 4px; padding: 14px; color: var(--fg-3); text-align: center; font-size: 13px; }
+.k-range { --k: var(--accent); } .k-rpm { --k: #6250d6; } .k-gate { --k: #eda100; }
+:root[data-theme="dark"] .k-rpm, :root:not([data-theme="light"]) .k-rpm { --k: #9085e9; }
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) .k-rpm { --k: #6250d6; } }
+/* stats */
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+@media (max-width: 900px) { .stats { grid-template-columns: 1fr; } }
+.stat-col { border-top: 3px solid var(--base); }
+.stat-col.yours { border-top-color: var(--accent); } .stat-col.ref { border-top-color: var(--ref); }
+.stat-col h2 { margin-bottom: 10px; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+@media (max-width: 480px) { .tiles { grid-template-columns: repeat(2, 1fr); } }
+.tile .k { font-size: 11px; color: var(--fg-3); text-transform: uppercase; letter-spacing: .06em; }
+.tile .v { font-family: var(--mono); font-size: 22px; font-weight: 500; font-variant-numeric: tabular-nums; line-height: 1.2; }
+.tile .u { font-size: 11px; color: var(--fg-3); }
+.charts { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 820px) { .charts { grid-template-columns: 1fr; } }
+.chart { aspect-ratio: 2 / 1; cursor: crosshair; }
+.log { font-family: var(--mono); font-size: 12px; line-height: 1.6; display: grid; gap: 2px; min-height: 7.5em; }
+.log .b { color: var(--base); } .log .y { color: var(--accent); } .log .r { color: var(--ref); }
+.log .hit { color: var(--good); font-weight: 500; } .log .miss { color: var(--bad); font-weight: 500; } .log .t { color: var(--fg-3); }
+pre.code { font-family: var(--mono); font-size: 12px; line-height: 1.55; overflow-x: auto; white-space: pre; margin: 0; background: var(--panel-2); padding: 10px; border-radius: 4px; }
+.guide ol, .guide ul { margin: 0; padding-left: 20px; display: grid; gap: 8px; max-width: 76ch; }
+.notes { font-size: 12px; color: var(--fg-3); max-width: 90ch; margin: 0; }
+.notes code, .guide code { font-family: var(--mono); font-size: 11.5px; }
+.spec { font-family: var(--mono); font-size: 12px; word-break: break-all; color: var(--fg-2); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div>
+      <div class="team">FTC 18121 · Limelight + flywheel bench sim</div>
+      <h1>Shooter Brain Testbed</h1>
+      <p class="sub">Three shooter brains read the same noisy AprilTag stream. The baseline has an empty pipeline: first tag, table lookup, fire every cycle. The mentor reference is tuned. Yours is whatever you build on the right.</p>
+    </div>
+    <div class="row">
+      <button id="btnRun" class="primary" aria-pressed="true">Pause</button>
+      <button id="btnReset">Reset stats</button>
+    </div>
+  </header>
+
+  <section class="panel">
+    <h2>Bench conditions (shared by all brains)</h2>
+    <div class="bench">
+      <div class="ctl">
+        <span class="lbl">Robot motion</span>
+        <div class="seg" role="group" aria-label="Robot motion">
+          <button id="motHold" aria-pressed="true">Hold position</button>
+          <button id="motWander" aria-pressed="false">Wander 1–5 m</button>
+        </div>
+      </div>
+      <div class="ctl"><label for="dist">True distance to goal <span class="val" id="distV">3.00 m</span></label><input type="range" id="dist" min="1" max="5" step="0.05" value="3"></div>
+      <div class="ctl"><label for="noise">Limelight range noise <span class="val" id="noiseV">1.0×</span></label><input type="range" id="noise" min="0.25" max="2.5" step="0.05" value="1"></div>
+      <div class="ctl"><label for="drag">Air drag (not in the table) <span class="val" id="dragV">1.0×</span></label><input type="range" id="drag" min="0" max="2" step="0.1" value="1"></div>
+      <div class="ctl"><label for="tau">Flywheel spin-up time constant <span class="val" id="tauV">0.40 s</span></label><input type="range" id="tau" min="0.1" max="1.2" step="0.05" value="0.4"></div>
+      <div class="ctl"><label for="cadence">Feeder cycle <span class="val" id="cadenceV">1.0 s</span></label><input type="range" id="cadence" min="0.4" max="2.5" step="0.1" value="1"></div>
+    </div>
+  </section>
+
+  <section class="main">
+    <div class="panel">
+      <h2>Side view · last 8 shots per brain</h2>
+      <canvas id="field" aria-label="Side view of robot, goal, tag cluster and recent ball trajectories"></canvas>
+      <div class="legend">
+        <span><i class="sw" style="background:var(--base)"></i>Baseline</span>
+        <span><i class="sw" style="background:var(--accent)"></i>Your brain</span>
+        <span><i class="dot" style="background:var(--good)"></i>Hit (inside opening)</span>
+        <span><i class="dot" style="background:var(--bad)"></i>Miss</span>
+        <span><i class="dot" style="background:var(--fg-2)"></i>Tag seen this frame</span>
+        <span><i class="dot" style="border:1.5px solid var(--fg-3)"></i>Tag dropped</span>
+      </div>
+      <p class="notes" style="margin-top:10px">Each goal carries a cluster of four AprilTags (red scoring: IDs 30–33). The four squares are those tags. Reference-brain shots are counted in the stats but not drawn, to keep the view readable.</p>
+    </div>
+
+    <aside class="panel builder">
+      <div class="row" style="justify-content:space-between">
+        <h2>Your pipeline</h2>
+        <div class="row">
+          <button class="sm" data-preset="empty">Empty</button>
+          <button class="sm" data-preset="starter">Starter</button>
+        </div>
+      </div>
+      <div>
+        <span class="lbl" style="margin-bottom:6px">Add a stage</span>
+        <div class="palette" id="palette"></div>
+      </div>
+      <div class="stages" id="stages"></div>
+      <div class="ctl">
+        <label for="specIn">Pipeline spec (same string as ShooterConfig.PIPELINE)</label>
+        <div class="row" style="flex-wrap:nowrap"><input type="text" id="specIn" spellcheck="false" placeholder="TagMedian; RollingAverage(frames=5); RecentTagGate(maxAgeMs=300)"><button class="sm" id="btnLoadSpec">Load</button></div>
+        <div id="specErr" class="notes" style="color:var(--bad)"></div>
+      </div>
+    </aside>
+  </section>
+
+  <section class="stats">
+    <div class="panel stat-col"><h2>Baseline · empty pipeline</h2><div class="tiles" id="tilesB"></div></div>
+    <div class="panel stat-col ref">
+      <h2>Mentor reference <button class="sm" id="btnReveal">Reveal</button></h2>
+      <div class="tiles" id="tilesR"></div>
+      <div id="refSpec" hidden style="margin-top:10px"><div class="spec" id="refSpecText"></div><div class="row" style="margin-top:6px"><button class="sm" id="btnLoadRef">Load into mine</button></div></div>
+    </div>
+    <div class="panel stat-col yours"><h2>Your brain</h2><div class="tiles" id="tilesY"></div></div>
+  </section>
+
+  <section class="charts">
+    <div class="panel">
+      <h2>Range estimate · last 12 s</h2>
+      <canvas id="chRange" class="chart" aria-label="Range estimate over time for baseline and your brain against true distance"></canvas>
+      <div class="legend"><span><i class="sw dash" style="color:var(--fg-2)"></i>True distance</span><span><i class="sw" style="background:var(--base)"></i>Baseline estimate</span><span><i class="sw" style="background:var(--accent)"></i>Your estimate</span></div>
+    </div>
+    <div class="panel">
+      <h2>Your flywheel · last 12 s</h2>
+      <canvas id="chWheel" class="chart" aria-label="Your flywheel speed and target over time with tolerance band and shot markers"></canvas>
+      <div class="legend"><span><i class="sw dash" style="color:var(--fg-2)"></i>Target rpm</span><span><i class="sw" style="background:var(--accent)"></i>Actual rpm</span><span><i class="sw" style="background:var(--accent-soft);height:8px"></i>Tolerance band (if gate present)</span><span>▲ shot (green hit, red miss)</span></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Event log</h2>
+    <div class="log" id="log"></div>
+  </section>
+
+  <section class="panel">
+    <div class="row" style="justify-content:space-between;margin-bottom:8px">
+      <h2 style="margin:0">Export to TeamCode · ShooterConfig.java</h2>
+      <div class="row"><button class="sm" id="btnCopySpec">Copy spec only</button><button class="sm" id="btnCopy">Copy Java</button></div>
+    </div>
+    <p class="notes" style="margin-bottom:8px">The PIPELINE line is your pipeline, stage for stage, with the same names and tunables as <code>ShooterStages.java</code>. Paste the whole file over <code>TeamCode/src/main/java/org/firstinspires/ftc/teamcode/shooter/ShooterConfig.java</code>, or just the spec into its PIPELINE field. The calibration table is the sim's placeholder; the Shooter Calibration OpMode replaces it on the robot.</p>
+    <pre id="exportCode" class="code"></pre>
+  </section>
+
+  <section class="panel guide">
+    <h2>Team challenge</h2>
+    <ol>
+      <li><b>Start empty.</b> Press Empty, set Wander, drag 1×, noise 1×. Press Reset stats and let it run 60 s. Write down the baseline and your hit rate (they should match).</li>
+      <li><b>Fix one problem at a time.</b> Watch the event log and the range chart. Which misses are range noise? Which are the flywheel still spinning up? Which are shots at a goal that moved during a dropout? Add the one stage that targets that problem, run 60 s, record the hit rate and what changed.</li>
+      <li><b>Explain every stage.</b> Open its code. In one sentence each, say what it reads, what it changes, and what it costs (held shots, lag).</li>
+      <li><b>Beat the reference.</b> The mentor pipeline is hidden behind Reveal. Try to match or beat its hit rate before you look. Report your spec string, your hit rate, and your shots-per-minute.</li>
+      <li><b>Push it to the robot.</b> Copy the Java, paste over ShooterConfig, build, run the Shooter Calibration OpMode once for a real table, then Shooter TeleOp.</li>
+    </ol>
+    <p class="notes" style="margin-top:10px">Writing a new stage: add an entry to the DEFS object in this page's script, and the twin class in <code>ShooterStages.java</code> with the same name and tunables. The spec string is the contract between them.</p>
+  </section>
+
+  <p class="notes">Model assumptions: 55° launch angle, 0.35 m exit height, 1.00 m goal height, opening ±0.18 m, exit speed 0.0025 m/s per flywheel rpm. The calibration table has six points from 1 m to 5 m, from drag-free physics. Air drag shortens real flights by 2.5 cm × (ideal range − 2 m)² at 1×, which the table does not know about. Limelight runs at 30 fps. Per-tag range noise σ = 1.5 cm + 1.2 cm·d² (times the noise slider), detection probability falls with distance, 1.5% outliers, random 0.4–1.0 s dropouts. Flywheel is first-order with 0.5% jitter and loses 10% speed on each shot. Placeholders, to be tuned against the real robot.</p>
+</div>
+
+<script>
+(() => {
+'use strict';
+// ====================== physics ======================
+const G = 9.81, THETA = 55 * Math.PI / 180, H0 = 0.35, HG = 1.00, KV = 0.0025, GOAL_HALF = 0.18;
+const COS = Math.cos(THETA), TAN = Math.tan(THETA);
+function rpmFor(d) { const den = 2 * COS * COS * (H0 + d * TAN - HG); return Math.sqrt(G * d * d / den) / KV; }
+const CAL = [1, 1.75, 2.5, 3.25, 4, 5].map(d => ({ d, rpm: rpmFor(d) }));
+function lookup(d) {
+  if (d <= CAL[0].d) return CAL[0].rpm;
+  if (d >= CAL[CAL.length - 1].d) return CAL[CAL.length - 1].rpm;
+  for (let i = 1; i < CAL.length; i++) if (d <= CAL[i].d) { const a = CAL[i - 1], b = CAL[i], f = (d - a.d) / (b.d - a.d); return a.rpm + f * (b.rpm - a.rpm); }
+  return CAL[CAL.length - 1].rpm;
+}
+function idealLanding(rpm) {
+  const v = rpm * KV, a = -G / (2 * v * v * COS * COS), b = TAN, c = H0 - HG, disc = b * b - 4 * a * c;
+  return disc < 0 ? NaN : (-b - Math.sqrt(disc)) / (2 * a);
+}
+function realLanding(rpm) { const x = idealLanding(rpm); if (!Number.isFinite(x)) return x; return x - 0.025 * bench.drag * Math.max(0, x - 2) ** 2; }
+function trajectory(rpm, scale) {
+  const v = rpm * KV, vx = v * COS, vy = v * Math.sin(THETA), pts = [];
+  for (let t = 0; t < 3; t += 0.02) { const y = H0 + vy * t - 0.5 * G * t * t; if (y < 0) break; pts.push([vx * t * scale, y]); }
+  return pts;
+}
+function randn() { let u = 0, v = 0; while (u === 0) u = Math.random(); while (v === 0) v = Math.random(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
+const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+const mean = xs => { let s = 0, n = 0; for (const x of xs) { s += x; n++; } return n ? s / n : NaN; };
+const median = xs => { const s = [...xs].sort((a, b) => a - b), n = s.length; return n ? (n % 2 ? s[(n - 1) / 2] : (s[n / 2 - 1] + s[n / 2]) / 2) : NaN; };
+
+// ====================== stage definitions (twins of ShooterStages.java) ======================
+// kind 'range': run(tun, state, frame, rangeIn) -> metres      frame = { tags: [...], t }
+// kind 'rpm'  : run(tun, state, ctx, rpmIn)     -> rpm         ctx   = { range, tagCount, tagAgeMs, tableRpm, targetRpm, actualRpm }
+// kind 'gate' : run(tun, state, ctx)            -> '' to fire, or a reason to hold
+const DEFS = {
+  OutlierReject: { kind: 'range', desc: 'Drop tags farther than maxDevM from this frame\'s median, then average the survivors.', tun: { maxDevM: { v: 0.3, min: 0.05, max: 1, step: 0.05 } },
+    run(tun, st, frame, rangeIn) {
+      if (frame.tags.length < 3) return rangeIn;               // can't tell which one is the liar
+      const med = median(frame.tags);
+      const keep = frame.tags.filter(t => Math.abs(t - med) <= tun.maxDevM);
+      if (!keep.length) return rangeIn;
+      frame.tags = keep;
+      return mean(keep);
+    } },
+  TagMean: { kind: 'range', desc: 'Average of every visible tag. Four tags cut random noise roughly in half.', tun: {},
+    run(tun, st, frame, rangeIn) { return mean(frame.tags); } },
+  TagMedian: { kind: 'range', desc: 'Median of every visible tag. Like the mean, but one bad tag cannot drag it.', tun: {},
+    run(tun, st, frame, rangeIn) { return median(frame.tags); } },
+  RollingAverage: { kind: 'range', desc: 'Average of the last N frames\' estimates. Smoother, but lags a moving robot.', tun: { frames: { v: 5, min: 1, max: 30, step: 1 } },
+    run(tun, st, frame, rangeIn) {
+      st.hist = st.hist || [];
+      st.hist.push(rangeIn);
+      while (st.hist.length > tun.frames) st.hist.shift();
+      return mean(st.hist);
+    } },
+  RangeTrim: { kind: 'rpm', desc: 'Adds slope × (range − pivot). Fixes a table that is right at the pivot but drifts with distance.', tun: { slopeRpmPerM: { v: 0, min: -200, max: 200, step: 5 }, pivotM: { v: 3, min: 1, max: 5, step: 0.25 } },
+    run(tun, st, ctx, rpm) { return rpm + tun.slopeRpmPerM * (ctx.range - tun.pivotM); } },
+  FarShotBoost: { kind: 'rpm', desc: 'Beyond startM, adds pctPerM percent per extra metre. Compensates for air drag on long shots.', tun: { startM: { v: 2.5, min: 1, max: 5, step: 0.25 }, pctPerM: { v: 2, min: 0, max: 10, step: 0.25 } },
+    run(tun, st, ctx, rpm) { const extra = Math.max(0, ctx.range - tun.startM); return rpm * (1 + extra * tun.pctPerM / 100); } },
+  ManualOffset: { kind: 'rpm', desc: 'Flat trim. On the robot the driver nudges this from the gamepad.', tun: { offsetRpm: { v: 0, min: -400, max: 400, step: 10 } },
+    run(tun, st, ctx, rpm) { return rpm + tun.offsetRpm; } },
+  TagCountGate: { kind: 'gate', desc: 'Hold unless at least minTags tags went into the current estimate.', tun: { minTags: { v: 2, min: 1, max: 4, step: 1 } },
+    run(tun, st, ctx) { return ctx.tagCount >= tun.minTags ? '' : `only ${ctx.tagCount} tag(s)`; } },
+  RecentTagGate: { kind: 'gate', desc: 'Hold if the last tag sighting is older than maxAgeMs. Stops shots at where the goal used to be.', tun: { maxAgeMs: { v: 300, min: 50, max: 2000, step: 25 } },
+    run(tun, st, ctx) { return ctx.tagAgeMs <= tun.maxAgeMs ? '' : `stale target (${ctx.tagAgeMs.toFixed(0)} ms)`; } },
+  VelocityToleranceGate: { kind: 'gate', desc: 'Hold until the measured flywheel speed is within tolRpm of the target.', tun: { tolRpm: { v: 60, min: 5, max: 400, step: 5 } },
+    run(tun, st, ctx) { const dv = ctx.actualRpm - ctx.targetRpm; return Math.abs(dv) <= tun.tolRpm ? '' : `flywheel ${dv >= 0 ? '+' : ''}${dv.toFixed(0)} rpm`; } },
+};
+const KIND_LABEL = { range: 'range filter', rpm: 'velocity modifier', gate: 'fire gate' };
+const REF_SPEC = 'OutlierReject(maxDevM=0.3); TagMedian; RollingAverage(frames=4); FarShotBoost(startM=2.5, pctPerM=1); RecentTagGate(maxAgeMs=300); VelocityToleranceGate(tolRpm=50)';
+const STARTER_SPEC = 'TagMean; RecentTagGate(maxAgeMs=300); VelocityToleranceGate(tolRpm=60)';
+
+function makeStage(name, on = true) {
+  const def = DEFS[name]; if (!def) throw new Error(`Unknown stage '${name}'. Known: ${Object.keys(DEFS).join(', ')}`);
+  const tun = {}; for (const k in def.tun) tun[k] = def.tun[k].v;
+  return { name, def, on, tun, state: {}, effect: '—', el: null };
+}
+const fmtNum = v => { const s = (+v).toFixed(3).replace(/0+$/, '').replace(/\.$/, ''); return s === '' || s === '-' ? '0' : s; };
+function toSpec(stages) {
+  return stages.map(s => { const keys = Object.keys(s.tun); return (s.on ? '' : '!') + s.name + (keys.length ? '(' + keys.map(k => `${k}=${fmtNum(s.tun[k])}`).join(', ') + ')' : ''); }).join('; ');
+}
+function fromSpec(spec) {
+  const out = [];
+  for (let raw of (spec || '').split(';')) {
+    let item = raw.trim(); if (!item) continue;
+    let on = true; if (item.startsWith('!')) { on = false; item = item.slice(1).trim(); }
+    let name = item, args = '';
+    const p = item.indexOf('(');
+    if (p >= 0) { if (!item.endsWith(')')) throw new Error(`Missing ')' in: ${raw.trim()}`); name = item.slice(0, p).trim(); args = item.slice(p + 1, -1); }
+    const s = makeStage(name, on);
+    for (const kv of args.split(',')) {
+      if (!kv.trim()) continue;
+      const parts = kv.split('='); if (parts.length !== 2) throw new Error(`Expected name=value in: ${raw.trim()}`);
+      const k = parts[0].trim(); if (!(k in s.def.tun)) throw new Error(`Stage ${name} has no tunable '${k}'`);
+      const t = s.def.tun[k]; s.tun[k] = clamp(parseFloat(parts[1]), t.min, t.max);
+    }
+    out.push(s);
+  }
+  return out;
+}
+
+// ====================== bench + brains ======================
+const bench = { running: true, t: 0, D: 3, wander: false, vel: 0, noise: 1, drag: 1, tau: 0.4, cadence: 1.0, occl: 0, nextFire: 1.0, nextFrame: 0, lastFrame: { dets: [], seen: [false, false, false, false] } };
+const FPS = 30, DT = 1 / 60;
+function makeBrain(name, cls, stages) {
+  return { name, cls, stages, est: null, lastSeen: -1e9, tagCount: 0, rpm: 0, cmd: 0, tableRpm: 0, pending: false, holdReason: '', heldTime: 0, shots: 0, hits: 0, errSum: 0, errN: 0, trajs: [], draw: true };
+}
+const baseline = makeBrain('Baseline', 'b', []);
+const ref = makeBrain('Reference', 'r', fromSpec(REF_SPEC)); ref.draw = false;
+const yours = makeBrain('Yours', 'y', []);
+const BRAINS = [baseline, ref, yours];
+
+const hist = [], shotMarks = [], HIST_S = 12;
+const logEl = document.getElementById('log'), logLines = [];
+function log(cls, html) {
+  logLines.unshift(`<div><span class="t">${bench.t.toFixed(1).padStart(6)}s</span> <span class="${cls}">${html}</span></div>`);
+  if (logLines.length > 7) logLines.length = 7;
+  logEl.innerHTML = logLines.join('');
+}
+
+function limelightFrame() {
+  const D = bench.D, seen = [false, false, false, false], dets = [];
+  if (bench.occl > 0) return { dets, seen };
+  const pDet = clamp(1.1 - 0.11 * D, 0.2, 1), sigma = (0.015 + 0.012 * D * D) * bench.noise;
+  for (let i = 0; i < 4; i++) {
+    if (Math.random() > pDet) continue;
+    let r = D + randn() * sigma;
+    if (Math.random() < 0.015) r += (Math.random() < 0.5 ? -1 : 1) * (0.3 + Math.random() * 0.5) * bench.noise;
+    seen[i] = true; dets.push(Math.max(0.3, r));
+  }
+  return { dets, seen };
+}
+
+function observe(b, frame) {
+  if (!frame.dets.length) return;
+  const f = { tags: [...frame.dets], t: bench.t };
+  let r = f.tags[0];
+  for (const s of b.stages) {
+    if (s.def.kind !== 'range') continue;
+    if (!s.on) { s.effect = 'off'; continue; }
+    let out; try { out = s.def.run(s.tun, s.state, f, r); } catch (e) { out = NaN; }
+    const ok = Number.isFinite(out) && out > 0;
+    s.effect = ok ? `${r.toFixed(2)} → ${out.toFixed(2)} m` : 'ignored (bad output)';
+    if (ok) r = out;
+  }
+  b.est = r; b.lastSeen = bench.t; b.tagCount = f.tags.length;
+  b.errSum += Math.abs(r - bench.D); b.errN++;
+}
+function context(b, targetRpm) { return { range: b.est, tagCount: b.tagCount, tagAgeMs: (bench.t - b.lastSeen) * 1000, tableRpm: b.tableRpm, targetRpm, actualRpm: b.rpm }; }
+function gates(b) {
+  if (b.est === null) return 'no target yet';
+  const ctx = context(b, b.cmd); let hold = '';
+  for (const s of b.stages) {
+    if (s.def.kind !== 'gate') continue;
+    if (!s.on) { s.effect = 'off'; continue; }
+    let why; try { why = s.def.run(s.tun, s.state, ctx) || ''; } catch (e) { why = ''; }
+    s.effect = why ? `HOLD ${why}` : 'pass';
+    if (!hold && why) hold = why;
+  }
+  return hold;
+}
+function fire(b) {
+  const x = realLanding(b.rpm), err = x - bench.D, hit = Number.isFinite(err) && Math.abs(err) <= GOAL_HALF;
+  b.shots++; if (hit) b.hits++;
+  const ideal = idealLanding(b.rpm), scale = Number.isFinite(ideal) && ideal > 0 ? x / ideal : 1;
+  b.trajs.push({ pts: trajectory(b.rpm, scale), hit, x }); while (b.trajs.length > 8) b.trajs.shift();
+  if (b === yours) shotMarks.push({ t: bench.t, rpm: b.rpm, hit });
+  b.rpm *= 0.90;
+  const where = !Number.isFinite(err) ? 'fell short of goal height' : `${err < 0 ? 'short' : 'long'} ${Math.abs(err * 100).toFixed(0)} cm`;
+  log(b.cls, `${b.name} <span class="${hit ? 'hit' : 'miss'}">${hit ? 'HIT' : 'MISS'}</span> ${where} · ranged ${b.est.toFixed(2)}, true ${bench.D.toFixed(2)} m · wheel ${b.rpm.toFixed(0)}/${b.cmd.toFixed(0)}`);
+}
+function stepBrain(b) {
+  if (b.est !== null) {
+    b.tableRpm = lookup(b.est);
+    const ctx = context(b, NaN); let rpm = b.tableRpm;
+    for (const s of b.stages) {
+      if (s.def.kind !== 'rpm') continue;
+      if (!s.on) { s.effect = 'off'; continue; }
+      let out; try { out = s.def.run(s.tun, s.state, ctx, rpm); } catch (e) { out = NaN; }
+      const ok = Number.isFinite(out) && out >= 0;
+      s.effect = ok ? `${out - rpm >= 0 ? '+' : ''}${(out - rpm).toFixed(0)} rpm` : 'ignored (bad output)';
+      if (ok) rpm = out;
+    }
+    b.cmd = rpm;
+  }
+  b.rpm += (b.cmd - b.rpm) * (DT / bench.tau) + randn() * b.cmd * 0.005 * Math.sqrt(DT);
+  if (b.pending) {
+    const why = gates(b);
+    if (!why) { b.pending = false; b.holdReason = ''; fire(b); }
+    else { b.heldTime += DT; if (why !== b.holdReason) { b.holdReason = why; if (b === yours || (b === baseline && b.est === null)) log(b.cls, `${b.name} holding: ${why}`); } }
+  } else if (b.est !== null) gates(b);   // keep gate readouts live between requests
+}
+
+let lastOcclLog = -10;
+function tick() {
+  bench.t += DT;
+  if (bench.wander) {
+    bench.vel = clamp(bench.vel + randn() * 0.6 * DT, -0.6, 0.6); bench.D += bench.vel * DT;
+    if (bench.D < 1) { bench.D = 1; bench.vel = Math.abs(bench.vel); } if (bench.D > 5) { bench.D = 5; bench.vel = -Math.abs(bench.vel); }
+    ui.dist.value = bench.D.toFixed(2); ui.distV.textContent = bench.D.toFixed(2) + ' m';
+  }
+  if (bench.occl > 0) bench.occl -= DT;
+  else if (Math.random() < 0.0035 * DT * 60) { bench.occl = 0.4 + Math.random() * 0.6; if (bench.t - lastOcclLog > 3) { log('t', `tags occluded for ${bench.occl.toFixed(1)} s`); lastOcclLog = bench.t; } }
+  if (bench.t >= bench.nextFrame) { bench.nextFrame += 1 / FPS; const f = limelightFrame(); bench.lastFrame = f; BRAINS.forEach(b => observe(b, f)); }
+  if (bench.t >= bench.nextFire) { bench.nextFire += bench.cadence; BRAINS.forEach(b => b.pending = true); }
+  BRAINS.forEach(stepBrain);
+  hist.push({ t: bench.t, D: bench.D, eB: baseline.est, eY: yours.est, rpmY: yours.rpm, cmdY: yours.cmd });
+  while (hist.length && hist[0].t < bench.t - HIST_S) hist.shift();
+  while (shotMarks.length && shotMarks[0].t < bench.t - HIST_S) shotMarks.shift();
+}
+
+// ====================== drawing ======================
+function fit(cv) {
+  const r = cv.getBoundingClientRect(), dpr = window.devicePixelRatio || 1, w = Math.round(r.width * dpr), h = Math.round(r.height * dpr);
+  if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; }
+  const ctx = cv.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); return { ctx, w: r.width, h: r.height };
+}
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+function drawField() {
+  const { ctx, w, h } = fit(cvField); ctx.clearRect(0, 0, w, h);
+  const X0 = -0.45, X1 = 5.7, Y0 = -0.05, Y1 = 2.25, sx = x => (x - X0) / (X1 - X0) * w, sy = y => h - (y - Y0) / (Y1 - Y0) * h;
+  const fg2 = css('--fg-2'), fg3 = css('--fg-3'), base = css('--base'), acc = css('--accent'), good = css('--good'), bad = css('--bad');
+  ctx.fillStyle = css('--ground'); ctx.fillRect(0, sy(0), w, h - sy(0));
+  ctx.font = '11px ' + css('--mono'); ctx.fillStyle = fg3; ctx.textAlign = 'center';
+  for (let m = 0; m <= 5; m++) { ctx.fillRect(sx(m) - .5, sy(0) - 5, 1, 5); ctx.fillText(m + ' m', sx(m), sy(0) + 14); }
+  ctx.strokeStyle = fg3; ctx.setLineDash([3, 5]); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(sx(0.3), sy(HG)); ctx.lineTo(w, sy(HG)); ctx.stroke(); ctx.setLineDash([]);
+  ctx.fillStyle = fg2; ctx.fillRect(sx(-0.4), sy(0.3), sx(0) - sx(-0.4), sy(0) - sy(0.3));
+  ctx.save(); ctx.translate(sx(-0.1), sy(H0)); ctx.rotate(-THETA); ctx.fillRect(0, -3, 26, 6); ctx.restore();
+  const D = bench.D, gx = sx(D);
+  ctx.fillStyle = fg2; ctx.fillRect(gx - 2, sy(HG), 4, sy(0) - sy(HG));
+  ctx.strokeStyle = fg2; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(sx(D - GOAL_HALF), sy(HG) - 8); ctx.lineTo(sx(D - GOAL_HALF), sy(HG)); ctx.lineTo(sx(D + GOAL_HALF), sy(HG)); ctx.lineTo(sx(D + GOAL_HALF), sy(HG) - 8); ctx.stroke();
+  const tagY = sy(0.62), tagX = [-0.165, -0.07, 0.07, 0.165];
+  for (let i = 0; i < 4; i++) {
+    const tx = gx + tagX[i] * (w / (X1 - X0)) * 0.9; ctx.beginPath(); ctx.rect(tx - 5, tagY - 5, 10, 10);
+    if (bench.lastFrame.seen[i]) { ctx.fillStyle = fg2; ctx.fill(); } else { ctx.strokeStyle = fg3; ctx.lineWidth = 1.5; ctx.stroke(); }
+  }
+  ctx.fillStyle = fg3; ctx.textAlign = 'center'; ctx.fillText('tags 30–33', gx, tagY + 20);
+  const estTick = (b, color) => { if (b.est === null) return; ctx.fillStyle = color; ctx.fillRect(sx(b.est) - 1, sy(0), 2, 6); };
+  estTick(baseline, base); estTick(yours, acc);
+  const drawTrajs = (b, color) => {
+    b.trajs.forEach((s, i) => {
+      ctx.globalAlpha = 0.95 - (b.trajs.length - 1 - i) * 0.1; ctx.strokeStyle = color; ctx.lineWidth = s.hit ? 2 : 1.25; ctx.setLineDash(s.hit ? [] : [4, 4]);
+      ctx.beginPath(); s.pts.forEach(([x, y], k) => k ? ctx.lineTo(sx(x), sy(y)) : ctx.moveTo(sx(x), sy(y))); ctx.stroke(); ctx.setLineDash([]);
+      if (Number.isFinite(s.x)) { ctx.fillStyle = s.hit ? good : bad; ctx.beginPath(); ctx.arc(sx(s.x), sy(HG), 4.5, 0, Math.PI * 2); ctx.fill(); ctx.lineWidth = 1.5; ctx.strokeStyle = css('--field'); ctx.stroke(); }
+    });
+    ctx.globalAlpha = 1;
+  };
+  drawTrajs(baseline, base); drawTrajs(yours, acc);
+  ctx.textAlign = 'left'; ctx.font = '12px ' + css('--mono'); ctx.fillStyle = fg2;
+  ctx.fillText(`true ${D.toFixed(2)} m   occlusion ${bench.occl > 0 ? 'YES' : 'no'}   tags seen ${bench.lastFrame.dets.length}/4`, 10, 18);
+  ctx.fillStyle = acc; ctx.fillText(`yours: ${yours.est === null ? '—' : yours.est.toFixed(2) + ' m'}  ${yours.rpm.toFixed(0)}/${yours.cmd.toFixed(0)} rpm${yours.pending ? '  holding: ' + yours.holdReason : ''}`, 10, 36);
+  ctx.fillStyle = base; ctx.fillText(`base:  ${baseline.est === null ? '—' : baseline.est.toFixed(2) + ' m'}  ${baseline.rpm.toFixed(0)}/${baseline.cmd.toFixed(0)} rpm`, 10, 52);
+}
+function drawChart(cv, spec, hover) {
+  const { ctx, w, h } = fit(cv); ctx.clearRect(0, 0, w, h);
+  const L = 48, R = 10, T = 10, B = 22, pw = w - L - R, ph = h - T - B, t1 = bench.t, t0 = t1 - HIST_S;
+  const sx = t => L + (t - t0) / HIST_S * pw, sy = v => T + ph - (v - spec.y0) / (spec.y1 - spec.y0) * ph;
+  const fg3 = css('--fg-3'), line = css('--line');
+  ctx.strokeStyle = line; ctx.lineWidth = 1; ctx.font = '11px ' + css('--mono'); ctx.fillStyle = fg3; ctx.textAlign = 'right';
+  for (let i = 0; i <= 4; i++) { const v = spec.y0 + (spec.y1 - spec.y0) * i / 4, y = sy(v); ctx.beginPath(); ctx.moveTo(L, y); ctx.lineTo(w - R, y); ctx.stroke(); ctx.fillText(spec.fmt(v), L - 6, y + 4); }
+  ctx.textAlign = 'center'; for (let s = 0; s <= HIST_S; s += 3) ctx.fillText('−' + (HIST_S - s) + 's', sx(t0 + s), h - 6);
+  spec.band && spec.band(ctx, sx, sy);
+  for (const s of spec.series) {
+    ctx.strokeStyle = css(s.color); ctx.lineWidth = s.dash ? 1.25 : 2; ctx.setLineDash(s.dash ? [4, 4] : []); ctx.beginPath(); let pen = false;
+    for (const p of hist) { const v = p[s.key]; if (v === null || v === undefined) { pen = false; continue; } const x = sx(p.t), y = clamp(sy(v), T, T + ph); pen ? ctx.lineTo(x, y) : ctx.moveTo(x, y); pen = true; }
+    ctx.stroke(); ctx.setLineDash([]);
+  }
+  spec.marks && spec.marks(ctx, sx, sy);
+  if (hover && hist.length) {
+    const tH = t0 + (hover.x - L) / pw * HIST_S; let best = hist[0]; for (const p of hist) if (Math.abs(p.t - tH) < Math.abs(best.t - tH)) best = p;
+    const x = sx(best.t); ctx.strokeStyle = fg3; ctx.setLineDash([2, 3]); ctx.beginPath(); ctx.moveTo(x, T); ctx.lineTo(x, T + ph); ctx.stroke(); ctx.setLineDash([]);
+    const lines = spec.series.map(s => `${s.label} ${best[s.key] == null ? '—' : spec.fmt(best[s.key])}`);
+    ctx.font = '11px ' + css('--mono'); const bw = Math.max(...lines.map(l => ctx.measureText(l).width)) + 14, bh = lines.length * 15 + 8, bx = x + bw + 12 > w ? x - bw - 8 : x + 8, by = T + 4;
+    ctx.fillStyle = css('--panel'); ctx.strokeStyle = line; ctx.beginPath(); ctx.rect(bx, by, bw, bh); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = css('--fg'); ctx.textAlign = 'left'; lines.forEach((l, i) => ctx.fillText(l, bx + 7, by + 15 + i * 15));
+  }
+}
+const rangeSpec = { y0: 0.5, y1: 5.5, fmt: v => v.toFixed(2) + ' m', series: [{ key: 'D', color: '--fg-2', dash: true, label: 'true' }, { key: 'eB', color: '--base', label: 'base' }, { key: 'eY', color: '--accent', label: 'yours' }] };
+const wheelSpec = { y0: 0, y1: 3600, fmt: v => v.toFixed(0), series: [{ key: 'cmdY', color: '--fg-2', dash: true, label: 'target' }, { key: 'rpmY', color: '--accent', label: 'actual' }],
+  band(ctx, sx, sy) {
+    const g = yours.stages.find(s => s.name === 'VelocityToleranceGate' && s.on); if (!g) return;
+    const tol = g.tun.tolRpm, up = [], dn = [];
+    for (const p of hist) { if (p.cmdY <= 0) continue; up.push([sx(p.t), sy(p.cmdY + tol)]); dn.push([sx(p.t), sy(p.cmdY - tol)]); }
+    if (!up.length) return; ctx.fillStyle = css('--accent-soft'); ctx.beginPath(); up.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); dn.reverse().forEach(([x, y]) => ctx.lineTo(x, y)); ctx.closePath(); ctx.fill();
+  },
+  marks(ctx, sx, sy) { for (const m of shotMarks) { const x = sx(m.t), y = sy(m.rpm); ctx.fillStyle = css(m.hit ? '--good' : '--bad'); ctx.beginPath(); ctx.moveTo(x, y - 7); ctx.lineTo(x - 5, y + 2); ctx.lineTo(x + 5, y + 2); ctx.closePath(); ctx.fill(); } } };
+
+// ====================== stats ======================
+const tile = (k, v, u) => `<div class="tile"><div class="k">${k}</div><div class="v">${v}</div><div class="u">${u}</div></div>`;
+function renderStats(b, el) {
+  const rate = b.shots ? (100 * b.hits / b.shots).toFixed(0) + '%' : '—', err = b.errN ? (100 * b.errSum / b.errN).toFixed(1) : '—';
+  const spm = bench.t > 5 ? (60 * b.shots / bench.t).toFixed(1) : '—';
+  el.innerHTML = tile('Hit rate', rate, `${b.hits} of ${b.shots} shots`) + tile('Shots / min', spm, 'since reset') + tile('Range error', err, 'cm mean abs') + tile('Time held', b.heldTime.toFixed(1), 's waiting on gates');
+}
+
+// ====================== pipeline builder UI ======================
+const $ = id => document.getElementById(id);
+const ui = { dist: $('dist'), distV: $('distV'), noise: $('noise'), noiseV: $('noiseV'), drag: $('drag'), dragV: $('dragV'), tau: $('tau'), tauV: $('tauV'), cadence: $('cadence'), cadenceV: $('cadenceV') };
+const cvField = $('field'), cvRange = $('chRange'), cvWheel = $('chWheel');
+const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+
+function renderPalette() {
+  $('palette').innerHTML = Object.keys(DEFS).map(n => `<button class="k-${DEFS[n].kind}" data-add="${n}" title="${esc(DEFS[n].desc)}">${n}</button>`).join('');
+  $('palette').querySelectorAll('[data-add]').forEach(btn => btn.addEventListener('click', () => { yours.stages.push(makeStage(btn.dataset.add)); pipelineChanged(); }));
+}
+function renderStages() {
+  const host = $('stages'); host.innerHTML = '';
+  if (!yours.stages.length) { host.innerHTML = '<div class="empty">Empty pipeline: first tag, table lookup, fire every cycle. Same as the baseline. Add a stage above.</div>'; return; }
+  yours.stages.forEach((s, i) => {
+    const card = document.createElement('div'); card.className = `stage k-${s.def.kind}` + (s.on ? '' : ' off');
+    const tunHtml = Object.keys(s.tun).map(k => { const t = s.def.tun[k], id = `tun-${i}-${k}`; return `<div><label for="${id}"><span>${k}</span><span class="val" data-tv="${k}">${fmtNum(s.tun[k])}</span></label><input type="range" id="${id}" data-tun="${k}" min="${t.min}" max="${t.max}" step="${t.step}" value="${s.tun[k]}"></div>`; }).join('');
+    card.innerHTML = `
+      <div class="head"><label class="check"><input type="checkbox" data-on ${s.on ? 'checked' : ''} aria-label="Enable ${s.name}"></label><span class="name">${s.name}</span><span class="kind">${KIND_LABEL[s.def.kind]}</span><span class="sp"></span>
+        <button class="icon" data-mv="-1" title="Move up" ${i === 0 ? 'disabled' : ''}>▲</button><button class="icon" data-mv="1" title="Move down" ${i === yours.stages.length - 1 ? 'disabled' : ''}>▼</button><button class="icon" data-rm title="Remove">×</button></div>
+      <p class="desc">${esc(s.def.desc)}</p>
+      ${tunHtml ? `<div class="tun">${tunHtml}</div>` : ''}
+      <div class="effect" data-effect>—</div>
+      <details><summary>code</summary><pre>${esc(fnSource(s.def.run))}</pre></details>`;
+    card.querySelector('[data-on]').addEventListener('change', e => { s.on = e.target.checked; card.classList.toggle('off', !s.on); s.effect = s.on ? '—' : 'off'; specChanged(); });
+    card.querySelector('[data-rm]').addEventListener('click', () => { yours.stages.splice(i, 1); pipelineChanged(); });
+    card.querySelectorAll('[data-mv]').forEach(b => b.addEventListener('click', () => { const j = i + +b.dataset.mv; [yours.stages[i], yours.stages[j]] = [yours.stages[j], yours.stages[i]]; pipelineChanged(); }));
+    card.querySelectorAll('[data-tun]').forEach(r => r.addEventListener('input', () => { s.tun[r.dataset.tun] = +r.value; card.querySelector(`[data-tv="${r.dataset.tun}"]`).textContent = fmtNum(r.value); specChanged(); }));
+    s.el = card.querySelector('[data-effect]'); host.appendChild(card);
+  });
+}
+function fnSource(fn) { const src = fn.toString().replace(/^run\s*\(/, '('); const lines = src.split('\n'); const ind = Math.min(...lines.slice(1).filter(l => l.trim()).map(l => l.match(/^\s*/)[0].length)); return [lines[0], ...lines.slice(1).map(l => l.slice(Math.min(ind, l.length)))].join('\n'); }
+function updateEffects() {
+  for (const s of yours.stages) { if (!s.el) continue; s.el.textContent = s.effect; s.el.className = 'effect' + (s.effect.startsWith('HOLD') ? ' hold' : s.effect === 'pass' ? ' pass' : ''); }
+}
+function pipelineChanged() { renderStages(); specChanged(); }
+function specChanged() {
+  const spec = toSpec(yours.stages); $('specIn').value = spec; $('specErr').textContent = ''; renderExport(spec);
+  try { localStorage.setItem('shooter-testbed-spec', spec); } catch (e) { /* storage unavailable, fine */ }
+}
+function loadSpec(spec) {
+  try { const st = fromSpec(spec); yours.stages = st; pipelineChanged(); resetStats(); return true; }
+  catch (e) { $('specErr').textContent = e.message; return false; }
+}
+function renderExport(spec) {
+  const java = `package org.firstinspires.ftc.teamcode.shooter;
+
+/** Shooter tunables. Exported from the Shooter Brain Testbed. The calibration table is replaced by ShooterCalibration on the robot. */
+public final class ShooterConfig {
+
+    // --- Pipeline: range filters, velocity modifiers, fire gates, in order. See Pipeline.fromSpec(). ---
+    // '!' = present but switched off. Stage names and tunables are defined in ShooterStages.
+    public static String PIPELINE =
+            "${spec.replace(/; /g, '; "\n          + "')}";
+
+    // --- Calibration table: distance to goal (m) -> flywheel rpm. Must be sorted by distance. ---
+    // SIM PLACEHOLDER VALUES. Run "Shooter: Calibration" on the robot and paste its output here,
+    // or leave these and let CalibrationStore.loadIntoConfig() override them from the saved robot file.
+    public static double[] CALIBRATION_METERS = { ${CAL.map(p => p.d.toFixed(2)).join(', ')} };
+    public static double[] CALIBRATION_RPM    = { ${CAL.map(p => p.rpm.toFixed(0)).join(', ')} };
+
+    // --- Hardware ---
+    public static String FLYWHEEL_MOTOR = "shooter";
+    public static double FLYWHEEL_TICKS_PER_REV = 28;      // encoder ticks per flywheel revolution (28 for a bare goBILDA 5202/5203 shaft)
+    public static String LIMELIGHT = "limelight";
+    public static int LIMELIGHT_PIPELINE = 0;
+    public static int[] TARGET_TAG_IDS = { 30, 31, 32, 33 }; // red scoring cluster; blue scoring is 42-45
+
+    public static double rpmToTicksPerSecond(double rpm) { return rpm * FLYWHEEL_TICKS_PER_REV / 60.0; }
+    public static double ticksPerSecondToRpm(double tps) { return tps * 60.0 / FLYWHEEL_TICKS_PER_REV; }
+
+    private ShooterConfig() {}
+}
+`;
+  $('exportCode').textContent = java; $('exportCode').dataset.java = java; $('exportCode').dataset.spec = spec;
+}
+async function copyText(btn, txt, el) {
+  const old = btn.textContent;
+  try { await navigator.clipboard.writeText(txt); btn.textContent = 'Copied'; }
+  catch (e) { if (el) { const r = document.createRange(); r.selectNodeContents(el); const s = getSelection(); s.removeAllRanges(); s.addRange(r); } btn.textContent = 'Selected, press copy'; }
+  setTimeout(() => { btn.textContent = old; }, 1800);
+}
+$('btnCopy').addEventListener('click', e => copyText(e.currentTarget, $('exportCode').dataset.java || '', $('exportCode')));
+$('btnCopySpec').addEventListener('click', e => copyText(e.currentTarget, $('exportCode').dataset.spec || '', $('specIn')));
+$('btnLoadSpec').addEventListener('click', () => loadSpec($('specIn').value));
+$('specIn').addEventListener('keydown', e => { if (e.key === 'Enter') loadSpec($('specIn').value); });
+document.querySelectorAll('[data-preset]').forEach(b => b.addEventListener('click', () => loadSpec(b.dataset.preset === 'empty' ? '' : STARTER_SPEC)));
+$('btnReveal').addEventListener('click', e => { const box = $('refSpec'); box.hidden = !box.hidden; e.currentTarget.textContent = box.hidden ? 'Reveal' : 'Hide'; $('refSpecText').textContent = REF_SPEC; });
+$('btnLoadRef').addEventListener('click', () => loadSpec(REF_SPEC));
+
+// ====================== bench controls ======================
+function readBench() {
+  bench.noise = +ui.noise.value; ui.noiseV.textContent = fmtNum(bench.noise) + '×';
+  bench.drag = +ui.drag.value; ui.dragV.textContent = fmtNum(bench.drag) + '×';
+  bench.tau = +ui.tau.value; ui.tauV.textContent = bench.tau.toFixed(2) + ' s';
+  bench.cadence = +ui.cadence.value; ui.cadenceV.textContent = bench.cadence.toFixed(1) + ' s';
+  if (!bench.wander) bench.D = +ui.dist.value; ui.distV.textContent = bench.D.toFixed(2) + ' m';
+}
+['noise', 'drag', 'tau', 'cadence', 'dist'].forEach(id => ui[id].addEventListener('input', readBench));
+function setMotion(w) { bench.wander = w; $('motHold').setAttribute('aria-pressed', String(!w)); $('motWander').setAttribute('aria-pressed', String(w)); ui.dist.disabled = w; }
+$('motHold').addEventListener('click', () => setMotion(false)); $('motWander').addEventListener('click', () => setMotion(true));
+$('btnRun').addEventListener('click', e => { bench.running = !bench.running; e.currentTarget.textContent = bench.running ? 'Pause' : 'Run'; e.currentTarget.setAttribute('aria-pressed', String(bench.running)); });
+function resetStats() { for (const b of BRAINS) { b.shots = 0; b.hits = 0; b.errSum = 0; b.errN = 0; b.heldTime = 0; b.trajs = []; } shotMarks.length = 0; bench.t = 0; bench.nextFire = bench.cadence; bench.nextFrame = 0; hist.length = 0; log('t', 'stats reset'); }
+$('btnReset').addEventListener('click', resetStats);
+let hoverRange = null, hoverWheel = null;
+const hoverOn = (cv, set) => { cv.addEventListener('mousemove', e => { const r = cv.getBoundingClientRect(); set({ x: e.clientX - r.left }); }); cv.addEventListener('mouseleave', () => set(null)); };
+hoverOn(cvRange, v => hoverRange = v); hoverOn(cvWheel, v => hoverWheel = v);
+
+// ====================== boot ======================
+readBench(); renderPalette();
+let saved = null; try { saved = localStorage.getItem('shooter-testbed-spec'); } catch (e) { saved = null; }
+if (saved === null || !loadSpec(saved)) { yours.stages = []; pipelineChanged(); }
+renderStats(baseline, $('tilesB')); renderStats(ref, $('tilesR')); renderStats(yours, $('tilesY'));
+log('t', 'bench ready · table ' + CAL.map(c => `${c.d}m→${c.rpm.toFixed(0)}`).join('  '));
+let acc = 0, last = performance.now(), statTimer = 0, fxTimer = 0;
+function frame(now) {
+  const el = Math.min(0.1, (now - last) / 1000); last = now;
+  if (bench.running) { acc += el; while (acc >= DT) { tick(); acc -= DT; } }
+  drawField(); drawChart(cvRange, rangeSpec, hoverRange); drawChart(cvWheel, wheelSpec, hoverWheel);
+  fxTimer += el; if (fxTimer > 0.1) { fxTimer = 0; updateEffects(); }
+  statTimer += el; if (statTimer > 0.25) { statTimer = 0; renderStats(baseline, $('tilesB')); renderStats(ref, $('tilesR')); renderStats(yours, $('tilesY')); }
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
