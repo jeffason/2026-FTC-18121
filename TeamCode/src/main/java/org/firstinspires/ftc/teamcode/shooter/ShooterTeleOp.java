@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.shooter;
 
+import org.firstinspires.ftc.shooterlib.*;
+
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -54,12 +56,12 @@ public class ShooterTeleOp extends OpMode {
         feeder = hardwareMap.tryGet(Servo.class, "feeder");
         battery = hardwareMap.voltageSensor.iterator().hasNext() ? hardwareMap.voltageSensor.iterator().next() : null;
 
-        CalibrationStore.loadIntoConfig();
-        ranger = new LimelightRanger(hardwareMap);
+        ShooterConfig.loadCalibrationFromHub();
+        ranger = new LimelightRanger(hardwareMap, ShooterConfig.LIMELIGHT, ShooterConfig.LIMELIGHT_PIPELINE, ShooterConfig.TARGET_TAG_IDS);
         Pipeline pipeline;
-        try { pipeline = ShooterStages.defaultPipeline(); }
+        try { pipeline = ShooterConfig.pipeline(); }
         catch (IllegalArgumentException e) { pipeline = new Pipeline(); pipelineError = e.getMessage(); }
-        brain = new ShooterBrain(CalibrationTable.fromConfig(), pipeline);
+        brain = new ShooterBrain(ShooterConfig.table(), pipeline);
         if (!pipelineError.isEmpty()) telemetry.addLine("PIPELINE SPEC INVALID; shots are blocked until it is fixed: " + pipelineError);
 
         telemetry.addData("Calibration", CalibrationStore.lastLoadMessage());

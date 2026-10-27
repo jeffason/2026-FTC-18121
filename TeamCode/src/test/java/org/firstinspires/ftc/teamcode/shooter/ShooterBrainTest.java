@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.shooter;
 
+import org.firstinspires.ftc.shooterlib.*;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -20,7 +22,7 @@ public class ShooterBrainTest {
             new double[] { 1.0, 2.0, 3.0, 4.0, 5.0 }, new double[] { 1750, 2080, 2430, 2750, 3030 });
 
     private static ShooterBrain brain(String spec) {
-        return new ShooterBrain(TABLE, Pipeline.fromSpec(spec, ShooterStages.REGISTRY));
+        return new ShooterBrain(TABLE, StageRegistry.builtIns().parse(spec));
     }
 
     // ---------- calibration table ----------
@@ -121,7 +123,7 @@ public class ShooterBrainTest {
             @Override public List<Tunable> tunables() { return Collections.emptyList(); }
             @Override public double filterRange(RangeFrame f, double rangeIn) { throw new IllegalStateException("boom"); }
         };
-        ShooterBrain b = new ShooterBrain(TABLE, new Pipeline().add(bad).add(new ShooterStages.TagMean()));
+        ShooterBrain b = new ShooterBrain(TABLE, new Pipeline().add(bad).add(new BuiltInStages.TagMean()));
         b.observe(Arrays.asList(2.0, 4.0), 0);
         assertEquals(3.0, b.getRangeMeters(), 1e-9);                           // Bad skipped, TagMean still ran
         assertEquals("ignored (threw IllegalStateException)", b.getPipeline().lastEffects().get(bad));
@@ -187,7 +189,7 @@ public class ShooterBrainTest {
 
     @Test public void specRoundTrips() {
         String spec = "OutlierReject(maxDevM=0.3); TagMedian; !FarShotBoost(startM=2.5, pctPerM=2); RecentTagGate(maxAgeMs=300)";
-        Pipeline p = Pipeline.fromSpec(spec, ShooterStages.REGISTRY);
+        Pipeline p = StageRegistry.builtIns().parse(spec);
         assertEquals(4, p.stages().size());
         assertFalse(p.isEnabled(p.stages().get(2)));
         assertEquals(spec, p.toSpec());
@@ -195,14 +197,14 @@ public class ShooterBrainTest {
 
     @Test public void everyRegisteredStageParsesWithDefaults() {
         StringBuilder spec = new StringBuilder();
-        for (String name : ShooterStages.REGISTRY.keySet()) spec.append(name).append("; ");
-        Pipeline p = Pipeline.fromSpec(spec.toString(), ShooterStages.REGISTRY);
-        assertEquals(ShooterStages.REGISTRY.size(), p.stages().size());
-        assertEquals(p.toSpec(), Pipeline.fromSpec(p.toSpec(), ShooterStages.REGISTRY).toSpec());
+        for (String name : StageRegistry.builtIns().names()) spec.append(name).append("; ");
+        Pipeline p = StageRegistry.builtIns().parse(spec.toString());
+        assertEquals(StageRegistry.builtIns().names().size(), p.stages().size());
+        assertEquals(p.toSpec(), StageRegistry.builtIns().parse(p.toSpec()).toSpec());
     }
 
     /**
-     * The sim-to-robot contract: every stage in ShooterStages.REGISTRY exists in the sim's DEFS with the
+     * The sim-to-robot contract: every stage the team registry knows (built-ins plus TeamStages) exists in the sim's DEFS with the
      * same kind and the same tunables (name, default, min, max, step), and the sim defines nothing extra.
      */
     @Test public void simDefsMatchJavaRegistry() throws java.io.IOException {
@@ -228,7 +230,7 @@ public class ShooterBrainTest {
 
         java.util.Map<String, String> javaKinds = new java.util.LinkedHashMap<>();
         java.util.Map<String, java.util.List<String>> javaTunables = new java.util.LinkedHashMap<>();
-        for (java.util.Map.Entry<String, java.util.function.Supplier<Stage>> e : ShooterStages.REGISTRY.entrySet()) {
+        for (java.util.Map.Entry<String, java.util.function.Supplier<Stage>> e : ShooterConfig.registry().asMap().entrySet()) {
             Stage s = e.getValue().get();
             assertEquals("registry key must equal name()", e.getKey(), s.name());
             javaKinds.put(s.name(), s instanceof RangeFilter ? "range" : s instanceof VelocityModifier ? "rpm" : "gate");
@@ -259,7 +261,7 @@ public class ShooterBrainTest {
             String head = parts[0].trim();
             int sp = head.indexOf(' ');
             String kind = head.substring(0, sp), spec = head.substring(sp + 1).trim(), input = parts[1].trim(), expect = parts[2].trim();
-            Pipeline p = Pipeline.fromSpec(spec, ShooterStages.REGISTRY);
+            Pipeline p = StageRegistry.builtIns().parse(spec);
             switch (kind) {
                 case "range": {
                     ShooterBrain brain = new ShooterBrain(TABLE, p);
@@ -310,7 +312,7 @@ public class ShooterBrainTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void nonNumericTunableValueIsRejected() { Pipeline.fromSpec("ManualOffset(offsetRpm=100rpm)", ShooterStages.REGISTRY); }
+    public void nonNumericTunableValueIsRejected() { StageRegistry.builtIns().parse("ManualOffset(offsetRpm=100rpm)"); }
 
     /**
      * Runs the sim's own JavaScript (its stage code and parity runner) under node and requires zero
@@ -348,7 +350,7 @@ public class ShooterBrainTest {
         java.nio.file.Path file = dir.resolve("ShooterConfig.java");
         java.nio.file.Files.write(file, source.getBytes(java.nio.charset.StandardCharsets.UTF_8));
         java.io.ByteArrayOutputStream err = new java.io.ByteArrayOutputStream();
-        int rc = javac.run(null, null, err, "-d", dir.toString(), "-nowarn", file.toString());
+        int rc = javac.run(null, null, err, "-d", dir.toString(), "-nowarn", "-cp", System.getProperty("java.class.path"), file.toString());
         assertEquals("exported ShooterConfig.java does not compile:\n" + err, 0, rc);
     }
 
@@ -432,7 +434,7 @@ public class ShooterBrainTest {
     }
 
     @Test public void defaultConfigPipelineHoldsStaleTargetsAndUnreadyFlywheel() {
-        ShooterBrain b = new ShooterBrain(TABLE, ShooterStages.defaultPipeline());
+        ShooterBrain b = new ShooterBrain(TABLE, ShooterConfig.pipeline());
         b.observe(Arrays.asList(3.0, 3.0, 3.0), 1000);
         double target = b.getTargetRpm();
         assertTrue(b.evaluate(target, 1100).fire);                              // fresh tag, wheel on target
@@ -445,7 +447,7 @@ public class ShooterBrainTest {
     }
 
     @Test public void tunableSnapsToItsStep() {
-        Pipeline p = Pipeline.fromSpec("RollingAverage(frames=2.6); TagCountGate(minTags=1.4)", ShooterStages.REGISTRY);
+        Pipeline p = StageRegistry.builtIns().parse("RollingAverage(frames=2.6); TagCountGate(minTags=1.4)");
         assertEquals(3, p.stages().get(0).tunable("frames").get(), 1e-9);
         assertEquals(1, p.stages().get(1).tunable("minTags").get(), 1e-9);
         Tunable t = new Tunable("x", 0, 0, 10, 2);
@@ -464,7 +466,7 @@ public class ShooterBrainTest {
     }
 
     @Test public void allTunablesReachesDisabledStages() {
-        Pipeline p = Pipeline.fromSpec("TagMedian; !RecentTagGate(maxAgeMs=300)", ShooterStages.REGISTRY);
+        Pipeline p = StageRegistry.builtIns().parse("TagMedian; !RecentTagGate(maxAgeMs=300)");
         assertTrue(p.liveTunables().isEmpty());
         assertEquals(1, p.allTunables().size());
         assertEquals(p.stages().get(1), p.ownerOf(p.allTunables().get(0)));
@@ -490,10 +492,33 @@ public class ShooterBrainTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void unknownStageIsRejected() { Pipeline.fromSpec("MagicAim", ShooterStages.REGISTRY); }
+    public void unknownStageIsRejected() { StageRegistry.builtIns().parse("MagicAim"); }
 
     @Test(expected = IllegalArgumentException.class)
-    public void unknownTunableIsRejected() { Pipeline.fromSpec("TagMean(frames=3)", ShooterStages.REGISTRY); }
+    public void unknownTunableIsRejected() { StageRegistry.builtIns().parse("TagMean(frames=3)"); }
+
+    @Test public void teamStagesRegisterOnTopOfBuiltIns() {
+        StageRegistry r = StageRegistry.builtIns();
+        int builtIn = r.names().size();
+        VelocityModifier wind = new VelocityModifier() {
+            final Tunable gust = new Tunable("gustRpm", 40, -200, 200, 10);
+            @Override public String name() { return "WindDrift"; }
+            @Override public List<Tunable> tunables() { return Collections.singletonList(gust); }
+            @Override public double adjustRpm(ShotContext c, double rpm) { return rpm + gust.get(); }
+        };
+        r.register("WindDrift", () -> wind);
+        assertEquals(builtIn + 1, r.names().size());
+        ShooterBrain b = new ShooterBrain(TABLE, r.parse("TagMean; WindDrift(gustRpm=50)"));
+        b.observe(Collections.singletonList(3.0), 0);
+        assertEquals(2480, b.getTargetRpm(), 1e-9);
+        assertEquals(builtIn, StageRegistry.builtIns().names().size());             // built-ins untouched
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void duplicateStageNameIsRejected() { StageRegistry.builtIns().register("TagMean", BuiltInStages.TagMean::new); }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void badStageNameIsRejected() { StageRegistry.builtIns().register("my stage", BuiltInStages.TagMean::new); }
 
     @Test public void tunableClampsAndNudges() {
         Tunable t = new Tunable("x", 5, 0, 10, 2);

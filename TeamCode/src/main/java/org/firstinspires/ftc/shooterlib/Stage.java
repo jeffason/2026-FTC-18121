@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.shooter;
+package org.firstinspires.ftc.shooterlib;
 
 import java.util.List;
 
@@ -13,8 +13,8 @@ import java.util.List;
  * The {@link Pipeline} runs enabled stages in order, kind by kind. With no stages at all the brain
  * uses the first tag it sees, looks the range up in the table, and always fires: that is the baseline.
  *
- * To add your own stage: implement one of the three interfaces, register it in
- * {@link ShooterStages#REGISTRY}, and mirror it in the sim's STAGES array.
+ * To add your own stage: implement one of the three interfaces, register it into the team's
+ * {@link StageRegistry} (see TeamStages in the team package), and mirror it in the sim's DEFS object.
  */
 public interface Stage {
     /** Registry name, also used in the pipeline spec string. Letters and digits only. */

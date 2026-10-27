@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.shooter;
+package org.firstinspires.ftc.shooterlib;
 
 /** Nudges the flywheel target. The first modifier receives the raw calibration-table rpm. */
 public interface VelocityModifier extends Stage {

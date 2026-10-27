@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.shooter;
+package org.firstinspires.ftc.shooterlib;
 
 /** Turns this frame's tag ranges into a better range estimate. Runs only on frames where at least one tag was seen. */
 public interface RangeFilter extends Stage {

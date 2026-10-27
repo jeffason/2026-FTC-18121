@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.shooter;
+package org.firstinspires.ftc.shooterlib;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.shooter;
+package org.firstinspires.ftc.shooterlib;
 
 /** Everything a velocity modifier or fire gate is allowed to know about the current shot. */
 public final class ShotContext {

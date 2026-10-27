@@ -1,43 +1,38 @@
-package org.firstinspires.ftc.teamcode.shooter;
+package org.firstinspires.ftc.shooterlib;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Deque;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Supplier;
 
 /**
- * The built-in stages and the registry the spec parser uses. Each stage here has a twin in the
- * Shooter Brain Testbed's STAGES array with the same name, tunables and math.
+ * The library's built-in stages. Each has a twin in the simulator's DEFS object with the same
+ * name, tunables and math, and a line or two in parity-vectors.txt.
  *
- * Adding a stage: write the class below (or in its own file), add one REGISTRY.put line,
- * then add the matching entry to the sim so you can try it before the robot.
+ * Team stages do not go here: they go in the team's own class (see TeamStages in the team package),
+ * which registers them into the same {@link StageRegistry}.
  */
-public final class ShooterStages {
+public final class BuiltInStages {
 
-    public static final Map<String, Supplier<Stage>> REGISTRY = new LinkedHashMap<>();
-    static {
+    /** Registers every built-in stage into the given registry and returns it. */
+    public static StageRegistry register(StageRegistry r) {
         // range filters
-        REGISTRY.put("OutlierReject", OutlierReject::new);
-        REGISTRY.put("TagMean", TagMean::new);
-        REGISTRY.put("TagMedian", TagMedian::new);
-        REGISTRY.put("RollingAverage", RollingAverage::new);
+        r.register("OutlierReject", OutlierReject::new);
+        r.register("TagMean", TagMean::new);
+        r.register("TagMedian", TagMedian::new);
+        r.register("RollingAverage", RollingAverage::new);
         // velocity modifiers
-        REGISTRY.put("RangeTrim", RangeTrim::new);
-        REGISTRY.put("FarShotBoost", FarShotBoost::new);
-        REGISTRY.put("ManualOffset", ManualOffset::new);
+        r.register("RangeTrim", RangeTrim::new);
+        r.register("FarShotBoost", FarShotBoost::new);
+        r.register("ManualOffset", ManualOffset::new);
         // fire gates
-        REGISTRY.put("TagCountGate", TagCountGate::new);
-        REGISTRY.put("RecentTagGate", RecentTagGate::new);
-        REGISTRY.put("VelocityToleranceGate", VelocityToleranceGate::new);
+        r.register("TagCountGate", TagCountGate::new);
+        r.register("RecentTagGate", RecentTagGate::new);
+        r.register("VelocityToleranceGate", VelocityToleranceGate::new);
+        return r;
     }
-
-    /** The pipeline the robot runs, from ShooterConfig.PIPELINE (which the sim exports). */
-    public static Pipeline defaultPipeline() { return Pipeline.fromSpec(ShooterConfig.PIPELINE, REGISTRY); }
 
     // =========================== range filters ===========================
 
@@ -153,5 +148,5 @@ public final class ShooterStages {
         return n == 0 ? Double.NaN : n % 2 == 1 ? s.get(n / 2) : (s.get(n / 2 - 1) + s.get(n / 2)) / 2.0;
     }
 
-    private ShooterStages() {}
+    private BuiltInStages() {}
 }

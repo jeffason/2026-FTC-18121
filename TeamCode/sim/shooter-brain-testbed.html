@@ -239,7 +239,7 @@ pre.code { font-family: var(--mono); font-size: 12px; line-height: 1.55; overflo
       <li><b>Beat the reference.</b> The mentor pipeline is hidden behind Reveal. Try to match or beat its hit rate before you look. Report your spec string, your hit rate, and your shots-per-minute.</li>
       <li><b>Push it to the robot.</b> Run <code>./gradlew :TeamCode:testDebugUnitTest</code> on your laptop first. Then copy the Java, paste over ShooterConfig, build, run the Shooter Calibration OpMode once for a real table, then Shooter TeleOp.</li>
     </ol>
-    <p class="notes" style="margin-top:10px">Writing a new stage: add its class and a REGISTRY line in <code>ShooterStages.java</code>, its twin in the DEFS object in this page's script with the same name and tunables, and a line in <code>parity-vectors.txt</code>. The spec string is the contract between them.</p>
+    <p class="notes" style="margin-top:10px">Writing a new stage: add its class and a register line in <code>TeamStages.java</code>, its twin in the DEFS object in this page's script (below the team-stages marker) with the same name and tunables, and a line in <code>parity-vectors.txt</code>. The spec string is the contract between them.</p>
   </section>
 
   <p class="notes">This page is TeamCode/sim/shooter-brain-testbed.html in the team repository. The bench uses placeholder numbers until we measure the real robot. The ball leaves at 55° from 0.35 m up; the goal opening is 1.00 m up and 36 cm wide; exit speed is 0.0025 m/s per rpm. The table has six points from 1 m to 5 m worked out without air drag. Air drag then shortens every flight past 2 m, more the farther it goes (about 22 cm short at 5 m with the slider at 1×), and the table does not know that. The camera reports 30 times a second. Each tag's reading is off by a random amount that grows with distance (about 2.7 cm at 1 m, about 31.5 cm at 5 m, scaled by the noise slider), far tags are missed more often, 1.5% of readings are wild, and now and then all tags vanish for 0.4 to 1.0 s. The flywheel takes time to change speed, jitters by 0.5%, and loses 10% of its speed each time it throws a ball. All of these are placeholders until we measure the real robot.</p>
@@ -280,6 +280,7 @@ const median = xs => { const s = [...xs].sort((a, b) => a - b), n = s.length; re
 // kind 'range': run(tun, state, frame, rangeIn) -> meters      frame = { tags: [...], t }
 // kind 'rpm'  : run(tun, state, ctx, rpmIn)     -> rpm         ctx   = { range, tagCount, tagAgeMs, tableRpm, targetRpm, actualRpm }
 // kind 'gate' : run(tun, state, ctx)            -> '' to fire, or a reason to hold
+// Built-in stages first (twins of BuiltInStages.java in the library), then the team's (twins of TeamStages.java).
 const DEFS = {
   OutlierReject: { kind: 'range', desc: 'With three or four tags, drop readings farther than maxDevM from the middle reading and average the rest. With fewer, keep the first reading.', tun: { maxDevM: { v: 0.3, min: 0.05, max: 1, step: 0.05 } },
     run(tun, st, frame, rangeIn) {
@@ -313,6 +314,7 @@ const DEFS = {
     run(tun, st, ctx) { return ctx.tagAgeMs <= tun.maxAgeMs ? '' : `stale target (${ctx.tagAgeMs.toFixed(0)} ms)`; } },
   VelocityToleranceGate: { kind: 'gate', desc: 'Hold until the measured flywheel speed is within tolRpm of the target.', tun: { tolRpm: { v: 60, min: 5, max: 400, step: 5 } },
     run(tun, st, ctx) { if (!Number.isFinite(ctx.actualRpm)) return 'no flywheel reading'; const dv = ctx.actualRpm - ctx.targetRpm; return Math.abs(dv) <= tun.tolRpm ? '' : `flywheel ${dv >= 0 ? '+' : ''}${dv.toFixed(0)} rpm`; } },
+  // ---- team stages: add yours below this line, matching TeamStages.java ----
 };
 const KIND_LABEL = { range: 'range filter', rpm: 'velocity modifier', gate: 'fire gate' };
 // Plain-words slider labels; the code name stays beside each so it matches the spec and the Java.
@@ -663,29 +665,32 @@ function loadSpec(spec) {
 function renderExport(spec) {
   const java = `package org.firstinspires.ftc.teamcode.shooter;
 
-/** Shooter tunables. Exported from the Shooter Brain Testbed. The calibration table is replaced by ShooterCalibration on the robot. */
+import org.firstinspires.ftc.shooterlib.CalibrationStore;
+import org.firstinspires.ftc.shooterlib.CalibrationTable;
+import org.firstinspires.ftc.shooterlib.Pipeline;
+import org.firstinspires.ftc.shooterlib.StageRegistry;
+
+/**
+ * The team's shooter settings. Exported from the Shooter Brain Testbed; the calibration table
+ * gets replaced by the output of the "Shooter: Calibration" OpMode run on the real robot.
+ * Library code lives in org.firstinspires.ftc.shooterlib; team stages live in TeamStages.
+ */
 public final class ShooterConfig {
 
     // --- Pipeline: range filters, velocity modifiers, fire gates, in order. See Pipeline.fromSpec(). ---
-    // '!' = present but switched off. Stage names and tunables are defined in ShooterStages.
+    // '!' = present but switched off. Built-in stage names are in BuiltInStages; team stages in TeamStages.
     public static String PIPELINE =
             "${spec.replace(/; /g, '; "\n          + "')}";
 
     // --- Calibration table: distance to goal (m) -> flywheel rpm. Must be sorted by distance. ---
     // SIM PLACEHOLDER VALUES. Run "Shooter: Calibration" on the robot and paste its output here,
-    // or leave these and let CalibrationStore.loadIntoConfig() override them from the saved robot file.
+    // or leave these and let loadCalibrationFromHub() override them from the saved robot file.
     public static double[] CALIBRATION_METERS = { ${CAL.map(p => p.d.toFixed(2)).join(', ')} };
     public static double[] CALIBRATION_RPM    = { ${CAL.map(p => p.rpm.toFixed(0)).join(', ')} };
 
-    /** The values above as shipped, so CalibrationStore can put them back after a saved table is deleted. */
+    /** The values above as shipped, so a deleted hub table really restores them. */
     static final double[] DEFAULT_CALIBRATION_METERS = CALIBRATION_METERS.clone();
     static final double[] DEFAULT_CALIBRATION_RPM = CALIBRATION_RPM.clone();
-
-    /** True while the table in use is the sim placeholder rather than one measured on this robot. */
-    public static boolean usingPlaceholderTable() {
-        return java.util.Arrays.equals(CALIBRATION_METERS, DEFAULT_CALIBRATION_METERS)
-            && java.util.Arrays.equals(CALIBRATION_RPM, DEFAULT_CALIBRATION_RPM);
-    }
 
     // --- Hardware ---
     public static String FLYWHEEL_MOTOR = "shooter";
@@ -693,6 +698,35 @@ public final class ShooterConfig {
     public static String LIMELIGHT = "limelight";
     public static int LIMELIGHT_PIPELINE = 0;
     public static int[] TARGET_TAG_IDS = { 30, 31, 32, 33 }; // red scoring cluster; blue scoring is 42-45
+
+    /** Built-in stages plus the team's own. */
+    public static StageRegistry registry() { return TeamStages.register(StageRegistry.builtIns()); }
+
+    /** The pipeline the robot runs. Throws IllegalArgumentException if PIPELINE names an unknown stage or tunable. */
+    public static Pipeline pipeline() { return registry().parse(PIPELINE); }
+
+    public static CalibrationTable table() { return new CalibrationTable(CALIBRATION_METERS, CALIBRATION_RPM); }
+
+    /** Replaces the table with the one saved on the hub, if there is a valid one. CalibrationStore.lastLoadMessage() says what happened. */
+    public static boolean loadCalibrationFromHub() {
+        CalibrationTable t = CalibrationStore.load();
+        if (t == null) return false;
+        CALIBRATION_METERS = t.meters();
+        CALIBRATION_RPM = t.rpm();
+        return true;
+    }
+
+    /** Puts the shipped placeholder table back in force for this run. */
+    public static void restoreDefaultTable() {
+        CALIBRATION_METERS = DEFAULT_CALIBRATION_METERS.clone();
+        CALIBRATION_RPM = DEFAULT_CALIBRATION_RPM.clone();
+    }
+
+    /** True while the table in use is the sim placeholder rather than one measured on this robot. */
+    public static boolean usingPlaceholderTable() {
+        return java.util.Arrays.equals(CALIBRATION_METERS, DEFAULT_CALIBRATION_METERS)
+            && java.util.Arrays.equals(CALIBRATION_RPM, DEFAULT_CALIBRATION_RPM);
+    }
 
     public static double rpmToTicksPerSecond(double rpm) { return rpm * FLYWHEEL_TICKS_PER_REV / 60.0; }
     public static double ticksPerSecondToRpm(double tps) { return tps * 60.0 / FLYWHEEL_TICKS_PER_REV; }

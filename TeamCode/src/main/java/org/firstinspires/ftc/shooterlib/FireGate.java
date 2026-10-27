@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.shooter;
+package org.firstinspires.ftc.shooterlib;
 
 /** Decides whether it is safe to fire right now. Gates can only hold a shot, never force one. */
 public interface FireGate extends Stage {

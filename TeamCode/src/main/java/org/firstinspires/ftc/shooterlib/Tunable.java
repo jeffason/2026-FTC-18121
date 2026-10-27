@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.shooter;
+package org.firstinspires.ftc.shooterlib;
 
 /** A named number a modifier exposes for live tweaking (gamepad in TeleOp, slider in the sim). */
 public final class Tunable {

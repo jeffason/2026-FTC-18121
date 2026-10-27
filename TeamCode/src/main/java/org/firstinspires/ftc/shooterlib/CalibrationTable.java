@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.shooter;
+package org.firstinspires.ftc.shooterlib;
 
 /** Distance (m) -> flywheel rpm, with linear interpolation between measured points. */
 public final class CalibrationTable {
@@ -15,10 +15,6 @@ public final class CalibrationTable {
                 throw new IllegalArgumentException("Calibration distances must be strictly increasing");
         this.meters = meters.clone();
         this.rpm = rpm.clone();
-    }
-
-    public static CalibrationTable fromConfig() {
-        return new CalibrationTable(ShooterConfig.CALIBRATION_METERS, ShooterConfig.CALIBRATION_RPM);
     }
 
     /** Copies, so a caller cannot break the validated ordering. */

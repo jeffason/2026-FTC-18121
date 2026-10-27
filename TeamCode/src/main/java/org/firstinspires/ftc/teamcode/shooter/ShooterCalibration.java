@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.shooter;
 
+import org.firstinspires.ftc.shooterlib.*;
+
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -39,15 +41,15 @@ public class ShooterCalibration extends LinearOpMode {
 
     @Override
     public void runOpMode() {
-        LimelightRanger ranger = new LimelightRanger(hardwareMap);
+        LimelightRanger ranger = new LimelightRanger(hardwareMap, ShooterConfig.LIMELIGHT, ShooterConfig.LIMELIGHT_PIPELINE, ShooterConfig.TARGET_TAG_IDS);
         DcMotorEx flywheel = hardwareMap.get(DcMotorEx.class, ShooterConfig.FLYWHEEL_MOTOR);
         flywheel.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        boolean hadSaved = CalibrationStore.loadIntoConfig();
+        boolean hadSaved = ShooterConfig.loadCalibrationFromHub();
 
         // A smooth readout: median of visible tags, averaged over 10 frames, no fire gates.
-        ShooterBrain readout = new ShooterBrain(CalibrationTable.fromConfig(),
-                Pipeline.fromSpec("TagMedian; RollingAverage(frames=10)", ShooterStages.REGISTRY));
+        ShooterBrain readout = new ShooterBrain(ShooterConfig.table(),
+                ShooterConfig.registry().parse("TagMedian; RollingAverage(frames=10)"));
         telemetry.addLine("Shooter calibration ready. Press Play.");
         telemetry.addData("Saved table on hub", hadSaved ? "yes (Start deletes it)" : CalibrationStore.lastLoadMessage());
         telemetry.update();
@@ -83,13 +85,13 @@ public class ShooterCalibration extends LinearOpMode {
             }
             if (gamepad1.b && !prev.b && !points.isEmpty()) points.remove(points.size() - 1);
             if (gamepad1.back && !prev.back) { points.clear(); javaOut = ""; }
-            if (gamepad1.start && !prev.start) { CalibrationStore.delete(); javaOut = CalibrationStore.lastLoadMessage(); }
+            if (gamepad1.start && !prev.start) { CalibrationStore.delete(); ShooterConfig.restoreDefaultTable(); javaOut = CalibrationStore.lastLoadMessage(); }
             if (gamepad1.y && !prev.y && points.size() >= 2) {
                 double[] m = new double[points.size()], r = new double[points.size()];
                 for (int i = 0; i < points.size(); i++) { m[i] = points.get(i)[0]; r[i] = points.get(i)[1]; }
                 try {
                     CalibrationStore.save(m, r);
-                    CalibrationStore.loadIntoConfig();
+                    ShooterConfig.loadCalibrationFromHub();
                     javaOut = CalibrationStore.asJava(ShooterConfig.CALIBRATION_METERS, ShooterConfig.CALIBRATION_RPM);
                     gamepad1.rumble(500);
                 } catch (IllegalArgumentException e) {

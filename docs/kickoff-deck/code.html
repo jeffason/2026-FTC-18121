@@ -3,12 +3,13 @@
 <p style="font-family:'JetBrains Mono', monospace;font-size:28px;color:#7f8792">TeamCode/src/main/java/org/firstinspires/ftc/teamcode/shooter/</p>
 <table style="font-size:32px;color:#eceef1;border:1px solid #343941;background:#1e2126">
 <tr style="background:#262a30"><th style="width:42%;text-align:left;padding:16px 26px">File</th><th style="width:58%;text-align:left">Job</th></tr>
-<tr><td style="color:#3987e5">ShooterStages.java</td><td>the stages; add yours here</td></tr>
+<tr><td style="color:#3987e5">TeamStages.java</td><td>your stages go here</td></tr>
 <tr><td style="color:#3987e5">ShooterConfig.java</td><td>the spec and the table</td></tr>
 <tr><td>ShooterCalibration, ShooterTeleOp</td><td>the two robot programs</td></tr>
+<tr><td>shooterlib/</td><td>the library: brain, pipeline, built-in stages</td></tr>
 <tr><td>ShooterBrainTest.java</td><td>39 tests, one command</td></tr>
 </table>
 <p style="font-family:'JetBrains Mono', monospace;font-size:30px;background:#262a30;color:#eceef1;padding:22px 36px;border-radius:12px">./gradlew :TeamCode:testDebugUnitTest</p>
 <p style="position:absolute;left:128px;bottom:64px;font-size:24px;color:#7f8792">README.md in that folder has the rest.</p>
-<aside>Only the two files in blue matter on day one. ShooterStages is where a new stage goes, and ShooterConfig is where your spec goes. The brain itself, ShooterBrain, is told what the camera saw every frame and decides the RPM and whether to fire every loop; it needs no robot, so it runs on a laptop. ShooterCalibration builds the real table from real shots and saves it on the robot. ShooterTeleOp drives, spins to target, and shows every stage's verdict on the driver's phone. The tests finish in a few seconds, no robot needed. From the sim to the robot it is four steps: export from the sim, paste into ShooterConfig and build and send it to the robot, run Calibration once, then run TeleOp. The README in that folder has more detail and every command.</aside>
+<aside>Only the two files in blue matter on day one. TeamStages is where a new stage goes, and ShooterConfig is where your spec goes. The library folder holds the brain, the pipeline and the ten built-in stages, and you do not need to change it. The brain itself, ShooterBrain, is told what the camera saw every frame and decides the RPM and whether to fire every loop; it needs no robot, so it runs on a laptop. ShooterCalibration builds the real table from real shots and saves it on the robot. ShooterTeleOp drives, spins to target, and shows every stage's verdict on the driver's phone. The tests finish in a few seconds, no robot needed. From the sim to the robot it is four steps: export from the sim, paste into ShooterConfig and build and send it to the robot, run Calibration once, then run TeleOp. The README in that folder has more detail and every command.</aside>
 </section>

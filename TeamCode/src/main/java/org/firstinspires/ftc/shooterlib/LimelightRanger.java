@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.shooter;
+package org.firstinspires.ftc.shooterlib;
 
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
@@ -27,10 +27,6 @@ public final class LimelightRanger {
     private LLResult latest;
     private String lastStatus = "no result yet";
     private long lastFrameMs = 0;
-
-    public LimelightRanger(HardwareMap hw) {
-        this(hw, ShooterConfig.LIMELIGHT, ShooterConfig.LIMELIGHT_PIPELINE, ShooterConfig.TARGET_TAG_IDS);
-    }
 
     public LimelightRanger(HardwareMap hw, String deviceName, int pipeline, int[] tagIds) {
         limelight = hw.get(Limelight3A.class, deviceName);

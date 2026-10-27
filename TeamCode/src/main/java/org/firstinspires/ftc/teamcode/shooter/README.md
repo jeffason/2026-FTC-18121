@@ -30,17 +30,24 @@ OutlierReject(maxDevM=0.3); TagMedian; RollingAverage(frames=5); !FarShotBoost(s
 
 | File | What it is |
 |---|---|
-| `ShooterConfig.java` | The tunables: `PIPELINE` spec, calibration table, hardware names. The sim's **Export to TeamCode** panel generates this file. |
+| `ShooterConfig.java` | The team's settings: `PIPELINE` spec, calibration table, hardware names, and `registry()` (built-ins plus team stages). The sim's **Export to TeamCode** panel generates this file. |
+| `TeamStages.java` | **Where the team's own stages go.** Register each one in `register()`. |
+| `ShooterCalibration.java` | OpMode **Shooter: Calibration**. First-run procedure that builds the table from real shots. |
+| `ShooterTeleOp.java` | OpMode **Shooter: TeleOp**. Drive + auto-ranged shooter, live stage telemetry, gamepad tunable menu. |
+
+The library, in `TeamCode/src/main/java/org/firstinspires/ftc/shooterlib/`, is not edited for team changes:
+
+| File | What it is |
+|---|---|
 | `ShooterBrain.java` | Pure Java decision logic. `observe(tagRanges)` every frame, `evaluate(actualRpm)` every loop. It imports nothing from the robot SDK, so it runs as ordinary laptop unit tests. |
 | `Pipeline.java` | Ordered stages with on/off switches, `fromSpec` / `toSpec`, and `lastEffects()` for telemetry. |
+| `StageRegistry.java` | The stages a spec may name: `StageRegistry.builtIns()` plus whatever the team registers. |
 | `Stage`, `RangeFilter`, `VelocityModifier`, `FireGate` | The three stage interfaces and their common base. |
-| `ShooterStages.java` | The built-in stages and the `REGISTRY` the spec parser uses. **Add new stages here.** |
+| `BuiltInStages.java` | The ten built-in stages. |
 | `CalibrationTable.java` | Distance → rpm with linear interpolation. |
 | `Tunable.java` | A named, clamped number a stage exposes for live tweaking. |
 | `LimelightRanger.java` | The only class that talks to the Limelight. New frame → list of horizontal ranges to the goal tags. |
 | `CalibrationStore.java` | Saves/loads the table on the Control Hub and prints it as Java. |
-| `ShooterCalibration.java` | OpMode **Shooter: Calibration**. First-run procedure that builds the table from real shots. |
-| `ShooterTeleOp.java` | OpMode **Shooter: TeleOp**. Drive + auto-ranged shooter, live stage telemetry, gamepad tunable menu. |
 | `TeamCode/src/test/java/org/firstinspires/ftc/teamcode/shooter/ShooterBrainTest.java` | Laptop tests. |
 | `TeamCode/sim/shooter-brain-testbed.html` | The simulator. Open it in a browser. |
 | `TeamCode/sim/parity-vectors.txt` | Known inputs and expected outputs for every stage. The Java tests run them; the sim runs them on load and shows `parity N/N ok` in its header. The sim embeds a copy, and a test fails if the copy drifts from the file. |
@@ -52,7 +59,7 @@ Your pipeline is remembered in that browser. The published copy is at
 <https://claude.ai/artifact/XGNJu4H8anUFcdKBQHtyu9>.
 
 The sim and the Java share **stage names, tunables and math**; the parity vectors check their outputs agree. In the page, each stage is an
-entry in the `DEFS` object in the script; on the robot it is a class in `ShooterStages.java`.
+entry in the `DEFS` object in the script; on the robot it is a class in `BuiltInStages.java` (library) or `TeamStages.java` (team).
 
 ## Run the tests
 
@@ -76,9 +83,9 @@ Results land in `TeamCode/build/reports/tests/testDebugUnitTest/index.html`. No 
 
 ## Writing a new stage
 
-1. Pick the kind. Implement `RangeFilter`, `VelocityModifier` or `FireGate` in `ShooterStages.java`.
-   Name tunables as identifiers (`maxAgeMs`), give them sane min/max/step.
-2. Add one line to `REGISTRY`.
+1. Pick the kind. Implement `RangeFilter`, `VelocityModifier` or `FireGate` in `TeamStages.java` (there is a
+   template in its comment). Name tunables as identifiers (`maxAgeMs`), give them sane min/max/step.
+2. Add one `r.register(...)` line in `TeamStages.register()`. Library files stay untouched.
 3. Add the twin to `DEFS` in the sim with the same name, tunables and math. Try it there first.
 4. Add a line or two to `TeamCode/sim/parity-vectors.txt` with a known input and output, and paste the
    file's new contents into the sim's `PARITY_VECTORS` block. `simDefsMatchJavaRegistry` checks names and

@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.shooter;
+package org.firstinspires.ftc.shooterlib;
 
 import com.qualcomm.robotcore.util.ReadWriteFile;
 import com.qualcomm.robotcore.util.RobotLog;
@@ -13,7 +13,7 @@ import java.util.Locale;
 
 /**
  * Saves the distance -> rpm table on the Control Hub so a calibration survives redeploys,
- * and formats it as Java so it can be pasted into {@link ShooterConfig} for version control.
+ * and formats it as Java so it can be pasted into the team's config class for version control.
  *
  * File lives in /sdcard/FIRST/settings/shooter_calibration.txt and looks like:
  *   meters=1.00,2.00,3.00
@@ -47,7 +47,7 @@ public final class CalibrationStore {
     }
 
     /** Sorted, deduplicated {meters, rpm} with two-decimal distances, ready for CalibrationTable. */
-    static double[][] normalize(double[] meters, double[] rpm) {
+    public static double[][] normalize(double[] meters, double[] rpm) {
         if (meters.length != rpm.length) throw new IllegalArgumentException("meters and rpm differ in length");
         int n = meters.length;
         Integer[] idx = new Integer[n];
@@ -70,16 +70,15 @@ public final class CalibrationStore {
     }
 
     /**
-     * Loads the saved table into ShooterConfig. Returns false and leaves the config alone if there is
-     * no file or it is invalid; lastLoadMessage() says which.
+     * Loads the saved table. Returns null if there is no file or it is invalid; lastLoadMessage() says which.
      */
-    public static boolean loadIntoConfig() {
+    public static CalibrationTable load() {
         File f = file();
-        if (!f.exists()) { lastLoadMessage = "no saved table on the hub"; return false; }
+        if (!f.exists()) { lastLoadMessage = "no saved table on the hub"; return null; }
         if (f.length() > MAX_FILE_BYTES) {
-            lastLoadMessage = "INVALID saved table (" + f.length() + " bytes, limit " + MAX_FILE_BYTES + "); using ShooterConfig defaults";
+            lastLoadMessage = "INVALID saved table (" + f.length() + " bytes, limit " + MAX_FILE_BYTES + "); using config defaults";
             RobotLog.ee("Shooter", lastLoadMessage);
-            return false;
+            return null;
         }
         try {
             double[] m = null, r = null;
@@ -90,32 +89,28 @@ public final class CalibrationStore {
             }
             if (m == null || r == null) throw new IllegalArgumentException("missing meters= or rpm= line");
             CalibrationTable table = new CalibrationTable(m, r);   // rejects NaN, unsorted, short or mismatched rows
-            ShooterConfig.CALIBRATION_METERS = table.meters();
-            ShooterConfig.CALIBRATION_RPM = table.rpm();
             lastLoadMessage = "loaded " + m.length + " points from " + f.getName();
             RobotLog.ii("Shooter", "Loaded calibration from " + f.getName() + ": " + asJava(m, r));
-            return true;
+            return table;
         } catch (RuntimeException e) {
-            lastLoadMessage = "INVALID saved table (" + e.getMessage() + "); using ShooterConfig defaults";
+            lastLoadMessage = "INVALID saved table (" + e.getMessage() + "); using config defaults";
             RobotLog.ee("Shooter", e, lastLoadMessage);
-            return false;
+            return null;
         }
     }
 
     /**
-     * Deletes the saved table and puts the ShooterConfig defaults back in force for this run.
+     * Deletes the saved table. The caller puts its own defaults back in force (ShooterConfig.restoreDefaultTable()).
      * Returns false if a file exists and could not be deleted; lastLoadMessage() says what happened.
      */
     public static boolean delete() {
         File f = file();
         boolean gone = !f.exists() || f.delete();
-        ShooterConfig.CALIBRATION_METERS = ShooterConfig.DEFAULT_CALIBRATION_METERS.clone();
-        ShooterConfig.CALIBRATION_RPM = ShooterConfig.DEFAULT_CALIBRATION_RPM.clone();
-        lastLoadMessage = gone ? "saved table deleted; ShooterConfig defaults in use" : "could NOT delete " + f.getName() + "; defaults in use until restart";
+        lastLoadMessage = gone ? "saved table deleted; config defaults in use" : "could NOT delete " + f.getName() + "; defaults in use until restart";
         return gone;
     }
 
-    /** Two Java lines ready to paste into ShooterConfig. */
+    /** Two Java lines ready to paste into the team's config class. */
     public static String asJava(double[] meters, double[] rpm) {
         return "CALIBRATION_METERS = { " + join(meters, "%.2f") + " };\n"
              + "CALIBRATION_RPM    = { " + join(rpm, "%.0f") + " };";

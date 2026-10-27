@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.shooter;
+package org.firstinspires.ftc.shooterlib;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -135,6 +135,9 @@ public final class Pipeline {
         }
         return sb.toString();
     }
+
+    /** Builds a pipeline from a spec string using a registry's stages. */
+    public static Pipeline fromSpec(String spec, StageRegistry registry) { return fromSpec(spec, registry.asMap()); }
 
     /** Builds a pipeline from a spec string. Throws IllegalArgumentException on an unknown stage or tunable. */
     public static Pipeline fromSpec(String spec, Map<String, Supplier<Stage>> registry) {
