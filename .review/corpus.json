@@ -1,0 +1,18 @@
+{
+  "conventions": {
+    "id": "ftc18121.conventions", "version": "2026.10", "owner": "software mentors",
+    "rules": [
+      { "id": "FTC-SIM-JAVA-LOCKSTEP", "statement": "Every shooter stage exists twice with the same name, tunable names and math: as a class registered in ShooterStages.java and as an entry in the DEFS object of TeamCode/sim/shooter-brain-testbed.html. A stage added or changed in one place is added or changed in the other in the same change.", "source": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/shooter/README.md" },
+      { "id": "FTC-STAGE-PURE", "statement": "Pipeline stages (RangeFilter, VelocityModifier, FireGate) touch no hardware, no HardwareMap, no clock and never sleep; everything they need arrives in RangeFrame or ShotContext.", "source": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/shooter/Stage.java" },
+      { "id": "FTC-SPEC-IS-CONTRACT", "statement": "The pipeline spec string (ShooterConfig.PIPELINE) is the only hand-off between the sim and the robot; Pipeline.fromSpec(Pipeline.toSpec(p)) must reproduce p, and a spec the sim exports must parse on the robot.", "source": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/shooter/Pipeline.java" },
+      { "id": "FTC-BRAIN-NO-SDK", "statement": "ShooterBrain, Pipeline, CalibrationTable and the stages import nothing from com.qualcomm or org.firstinspires so they run under plain JUnit on a laptop.", "source": "TeamCode/src/test/java/org/firstinspires/ftc/teamcode/shooter/ShooterBrainTest.java" }
+    ]
+  },
+  "failure": {
+    "id": "ftc18121.failure", "version": "2026.10", "owner": "software mentors",
+    "rules": [
+      { "id": "FTC-NEVER-FIRE-BLIND", "statement": "The brain never reports fire=true before a goal tag has been observed, and a stage returning NaN, infinity or a negative value is ignored rather than propagated into the flywheel target.", "source": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/shooter/Pipeline.java" },
+      { "id": "FTC-STALE-DATA-IS-NOT-FRESH", "statement": "A Limelight result that has not changed since the last poll is not fed to the brain again; duplicated frames would bias every rolling filter.", "source": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/shooter/LimelightRanger.java" }
+    ]
+  }
+}

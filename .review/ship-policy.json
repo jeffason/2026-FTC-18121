@@ -1,0 +1,7 @@
+{
+  "required": [
+    { "axis": "code.correctness", "maxRemediation": 0.25, "minConfidence": 0.6 },
+    { "axis": "test.efficacy",    "maxRemediation": 0.25, "minConfidence": 0.6 },
+    { "axis": "copy.voice",       "maxRemediation": 0.25, "minConfidence": 0.6 }
+  ]
+}
