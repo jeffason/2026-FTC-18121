@@ -1,21 +1,21 @@
-<section id="pipeline" data-transition="fade" style="background:#15181d;color:#eceef1;font-family:'Barlow', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:56px">
+<section id="pipeline" data-transition="fade" style="background:#15181d;color:#eceef1;font-family:'Barlow', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
 <h2 style="font-family:'Barlow Condensed', Arial, sans-serif;font-size:80px;font-weight:600;line-height:1.05;color:#eceef1">One pipeline, three kinds of stage</h2>
 <div style="display:flex;gap:0;align-items:center">
 <div style="width:200px;display:flex;flex-direction:column;gap:8px;background:#262a30;padding:28px;border-radius:12px"><p style="font-size:24px;color:#7f8792">input</p><p style="font-size:30px;font-weight:600">tag ranges</p></div>
 <x-shape kind="arrow-right" style="width:72px;height:36px;background:#7f8792"></x-shape>
 <div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#1c2a3f;border:3px solid #3987e5;padding:28px;border-radius:12px"><p style="font-size:24px;color:#3987e5;font-weight:600">RANGE FILTERS</p><p style="font-size:30px;font-weight:600">How far? A better distance</p><p style="font-size:24px;color:#b4bac4">TagMedian · OutlierReject · RollingAverage</p></div>
 <x-shape kind="arrow-right" style="width:72px;height:36px;background:#7f8792"></x-shape>
-<div style="width:220px;display:flex;flex-direction:column;gap:8px;background:#262a30;padding:28px;border-radius:12px"><p style="font-size:24px;color:#7f8792">lookup</p><p style="font-size:30px;font-weight:600">calibration table</p></div>
+<div style="width:220px;display:flex;flex-direction:column;gap:8px;background:#262a30;padding:28px;border-radius:12px"><p style="font-size:24px;color:#7f8792">lookup</p><p style="font-size:30px;font-weight:600">velocity table</p></div>
 <x-shape kind="arrow-right" style="width:72px;height:36px;background:#7f8792"></x-shape>
 <div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#262240;border:3px solid #9085e9;padding:28px;border-radius:12px"><p style="font-size:24px;color:#9085e9;font-weight:600">VELOCITY MODIFIERS</p><p style="font-size:30px;font-weight:600">How fast? A better RPM</p><p style="font-size:24px;color:#b4bac4">FarShotBoost · RangeTrim · ManualOffset</p></div>
 </div>
-<div style="display:flex;gap:48px;align-items:center">
+<div style="display:flex;gap:40px;align-items:center">
 <div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#3a2e14;border:3px solid #eda100;padding:28px;border-radius:12px"><p style="font-size:24px;color:#eda100;font-weight:600">FIRE GATES</p><p style="font-size:30px;font-weight:600">When? Fire, or a reason to hold</p><p style="font-size:24px;color:#b4bac4">RecentTagGate · VelocityToleranceGate · TagCountGate</p></div>
-<div style="flex:1;display:flex;flex-direction:column;gap:12px">
-<p style="font-size:30px;line-height:1.4;color:#b4bac4">Every stage has a name, an on/off switch and a few tunables. Stages run in order; each sees the previous one's output.</p>
-<p style="font-size:30px;line-height:1.4;color:#eceef1;font-weight:600">No stages at all is the baseline: first tag, table value, fire every cycle.</p>
+<p style="flex:1;font-size:28px;line-height:1.4;color:#b4bac4">Every stage has a name and an on/off switch, and most have tunables: numbers you can adjust. Range filters run in their listed order, then velocity modifiers; each fire gate checks the same shot information. With no stages at all you get the baseline: first tag, table value, fire every cycle.</p>
 </div>
+<div style="display:flex;flex-direction:column;gap:10px">
+<p style="font-family:'JetBrains Mono', monospace;font-size:26px;line-height:1.5;background:#1e2126;color:#eceef1;padding:22px 32px;border-radius:12px">OutlierReject(maxDevM=0.3); TagMedian; RollingAverage(frames=5); <span style="color:#7f8792">!FarShotBoost(startM=2.5, pctPerM=2);</span> RecentTagGate(maxAgeMs=300); VelocityToleranceGate(tolRpm=60)</p>
+<p style="font-size:26px;color:#b4bac4;line-height:1.4">That one line is the spec for the whole pipeline. Semicolons separate stages, parentheses hold the numbers, a leading ! means switched off. The simulator writes this line; ShooterConfig.java on the robot reads it.</p>
 </div>
-<p style="position:absolute;left:128px;bottom:64px;font-size:24px;color:#7f8792">Java: RangeFilter, VelocityModifier, FireGate interfaces · ShooterStages.java holds the built-ins</p>
-<aside>This is the one slide to remember. A stage is one idea with one job. Filters make the distance better, modifiers make the speed better, gates decide whether to shoot. Students add stages; they never edit the brain itself.</aside>
+<aside>Read that spec line out loud and say what it does, stage by stage. If you can say your pipeline in one breath, you can share it with anyone on the team as plain text.</aside>
 </section>

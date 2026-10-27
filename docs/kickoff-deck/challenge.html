@@ -1,19 +1,24 @@
-<section id="challenge" data-transition="fade" style="background:#2a78d6;color:#ffffff;font-family:'Barlow', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<section id="challenge" data-transition="fade" style="background:#2a78d6;color:#ffffff;font-family:'Barlow', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
 <p style="font-family:'JetBrains Mono', monospace;font-size:28px;color:#cde2fb;letter-spacing:4px;text-transform:uppercase">Team challenge</p>
-<h2 style="font-family:'Barlow Condensed', Arial, sans-serif;font-size:112px;font-weight:700;line-height:1;color:#ffffff;width:1600px">Start empty. Beat the reference.</h2>
-<div style="display:flex;gap:32px">
-<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#1c5cab;padding:36px;border-radius:12px">
-<h3 style="font-size:36px;font-weight:600;color:#ffffff">Your starting point</h3>
-<p style="font-size:28px;color:#cde2fb;line-height:1.45">Empty pipeline. Wander mode. Noise 1×, drag 1×. Same as the baseline.</p>
+<h2 style="font-family:'Barlow Condensed', Arial, sans-serif;font-size:104px;font-weight:700;line-height:1;color:#ffffff;width:1600px">Build a brain that beats the mentor's</h2>
+<div style="display:flex;gap:24px">
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#1c5cab;padding:32px;border-radius:12px">
+<h3 style="font-size:34px;font-weight:600;color:#ffffff">Start</h3>
+<p style="font-size:27px;color:#cde2fb;line-height:1.45">Press Empty, then Wander, noise 1×, drag 1×. Press Reset stats.</p>
 </div>
-<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#1c5cab;padding:36px;border-radius:12px">
-<h3 style="font-size:36px;font-weight:600;color:#ffffff">The rule</h3>
-<p style="font-size:28px;color:#cde2fb;line-height:1.45">One stage at a time. Run 60 s. Write down what changed and why before adding the next.</p>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#1c5cab;padding:32px;border-radius:12px">
+<h3 style="font-size:34px;font-weight:600;color:#ffffff">Build</h3>
+<p style="font-size:27px;color:#cde2fb;line-height:1.45">Add one stage at a time. Run 60 seconds. Write down what changed and why before the next one.</p>
 </div>
-<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#1c5cab;padding:36px;border-radius:12px">
-<h3 style="font-size:36px;font-weight:600;color:#ffffff">The target</h3>
-<p style="font-size:28px;color:#cde2fb;line-height:1.45">Match or beat the mentor reference's hit rate without pressing Reveal. Then press it and compare.</p>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#1c5cab;padding:32px;border-radius:12px">
+<h3 style="font-size:34px;font-weight:600;color:#ffffff">Win</h3>
+<p style="font-size:27px;color:#cde2fb;line-height:1.45">Match or beat the mentor reference's hit rate before you press Reveal in the stats panel. Then press it and compare.</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#1c5cab;padding:32px;border-radius:12px">
+<h3 style="font-size:34px;font-weight:600;color:#ffffff">Report</h3>
+<p style="font-size:27px;color:#cde2fb;line-height:1.45">Your spec line. Hit rate and shots per minute from a 60-second run. One sentence per stage: what it reads, what it changes, what it cost you.</p>
 </div>
 </div>
-<aside>The reference is deliberately not optimal. If a team beats it, that is a real result and we should adopt their spec. Encourage teams to try a stage nobody built yet.</aside>
+<p style="position:absolute;left:128px;bottom:64px;font-size:24px;color:#cde2fb;width:1664px">Make your own branch from feature/shooter-vision-testbed: a separate copy of the code. When the tests pass, open a pull request back to it, a request for a mentor to check and combine your changes. Calibration night is when we run your pipeline on the real robot.</p>
+<aside>If you beat the reference, bring your spec to the mentor review. You may also write a stage nobody has built yet; if you do, send its Java and its test with the report.</aside>
 </section>

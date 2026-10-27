@@ -9,20 +9,20 @@
 <div style="flex:1;display:flex;flex-direction:column;gap:16px;background:#ffffff;padding:36px;border:1px solid #d3d6dc;border-radius:12px">
 <p style="font-family:'JetBrains Mono', monospace;font-size:24px;color:#2a78d6;font-weight:500">STEP 2</p>
 <h3 style="font-size:36px;font-weight:600;line-height:1.15">Prove it on the laptop</h3>
-<p style="font-size:27px;color:#4d545e;line-height:1.45">New stage? Add a test. Then run the suite. Green in seconds, no robot.</p>
+<p style="font-size:27px;color:#4d545e;line-height:1.45">New stage? Add a test. Then run all the tests. They pass in seconds on a laptop, no robot.</p>
 </div>
 <div style="flex:1;display:flex;flex-direction:column;gap:16px;background:#ffffff;padding:36px;border:1px solid #d3d6dc;border-radius:12px">
 <p style="font-family:'JetBrains Mono', monospace;font-size:24px;color:#2a78d6;font-weight:500">STEP 3</p>
-<h3 style="font-size:36px;font-weight:600;line-height:1.15">Calibrate once</h3>
-<p style="font-size:27px;color:#4d545e;line-height:1.45">Run Shooter: Calibration. Five or six distances, A to record, Y to save. It prints the Java for the table.</p>
+<h3 style="font-size:36px;font-weight:600;line-height:1.15">Put it on the robot</h3>
+<p style="font-size:27px;color:#4d545e;line-height:1.45">Copy Java from the sim and paste it over ShooterConfig.java. Build the project and send it to the robot. Then run Shooter: Calibration once: five or six distances, A to record, Y to save.</p>
 </div>
 <div style="flex:1;display:flex;flex-direction:column;gap:16px;background:#ffffff;padding:36px;border:1px solid #d3d6dc;border-radius:12px">
 <p style="font-family:'JetBrains Mono', monospace;font-size:24px;color:#2a78d6;font-weight:500">STEP 4</p>
 <h3 style="font-size:36px;font-weight:600;line-height:1.15">Drive it</h3>
-<p style="font-size:27px;color:#4d545e;line-height:1.45">Shooter: TeleOp. Right trigger spins, right bumper requests a shot, the screen shows every stage's verdict.</p>
+<p style="font-size:27px;color:#4d545e;line-height:1.45">Run Shooter: TeleOp. Right trigger spins the wheel, right bumper asks for a shot, and the driver's phone shows every stage's verdict.</p>
 </div>
 </div>
 <p style="font-family:'JetBrains Mono', monospace;font-size:30px;background:#1e2126;color:#eceef1;padding:28px 40px;border-radius:12px">./gradlew :TeamCode:testDebugUnitTest</p>
-<p style="position:absolute;left:128px;bottom:64px;font-size:24px;color:#7b828c">Export from the sim, paste over ShooterConfig.java, build, deploy. The calibration table from the robot replaces the sim's placeholder.</p>
-<aside>The calibration OpMode is what makes the robot right. The sim's physics are placeholders. Say this twice: the sim is for the logic, the robot is for the numbers.</aside>
+<p style="position:absolute;left:128px;bottom:64px;font-size:24px;color:#7b828c">The table you measure on the robot replaces the sim's placeholder table.</p>
+<aside>The simulator is where you test the logic. Calibration is where the robot gets its real numbers. Both have to happen before a range shot counts.</aside>
 </section>

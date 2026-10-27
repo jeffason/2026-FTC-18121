@@ -44,7 +44,9 @@ public final class Pipeline {
         for (Stage s : stages) {
             if (!(s instanceof RangeFilter)) continue;
             if (!isEnabled(s)) { effects.put(s, "off"); continue; }
-            double out = ((RangeFilter) s).filterRange(frame, r);
+            double out;
+            try { out = ((RangeFilter) s).filterRange(frame, r); }
+            catch (RuntimeException e) { effects.put(s, "ignored (threw " + e.getClass().getSimpleName() + ")"); continue; }
             boolean ok = Double.isFinite(out) && out > 0;
             effects.put(s, ok ? String.format(Locale.US, "%.2f -> %.2f m", r, out) : "ignored (bad output)");
             if (ok) r = out;
@@ -58,7 +60,9 @@ public final class Pipeline {
         for (Stage s : stages) {
             if (!(s instanceof VelocityModifier)) continue;
             if (!isEnabled(s)) { effects.put(s, "off"); continue; }
-            double out = ((VelocityModifier) s).adjustRpm(ctx, rpm);
+            double out;
+            try { out = ((VelocityModifier) s).adjustRpm(ctx, rpm); }
+            catch (RuntimeException e) { effects.put(s, "ignored (threw " + e.getClass().getSimpleName() + ")"); continue; }
             boolean ok = Double.isFinite(out) && out >= 0;
             effects.put(s, ok ? String.format(Locale.US, "%+.0f rpm", out - rpm) : "ignored (bad output)");
             if (ok) rpm = out;
@@ -72,7 +76,9 @@ public final class Pipeline {
         for (Stage s : stages) {
             if (!(s instanceof FireGate)) continue;
             if (!isEnabled(s)) { effects.put(s, "off"); continue; }
-            String why = ((FireGate) s).check(ctx);
+            String why;
+            try { why = ((FireGate) s).check(ctx); }
+            catch (RuntimeException e) { effects.put(s, "ignored (threw " + e.getClass().getSimpleName() + ")"); continue; }
             if (why == null) why = "";
             effects.put(s, why.isEmpty() ? "pass" : "HOLD " + why);
             if (hold.isEmpty() && !why.isEmpty()) hold = why;

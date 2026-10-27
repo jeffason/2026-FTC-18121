@@ -3,15 +3,13 @@
 <p style="font-family:'JetBrains Mono', monospace;font-size:26px;color:#7f8792">TeamCode/src/main/java/org/firstinspires/ftc/teamcode/shooter/</p>
 <table style="font-size:27px;color:#eceef1;border:1px solid #343941;background:#1e2126">
 <tr style="background:#262a30"><th style="width:30%;text-align:left;padding:16px 24px">File</th><th style="width:70%;text-align:left">Job</th></tr>
-<tr><td style="color:#3987e5">ShooterStages.java</td><td>The built-in stages and the registry. This is where you add yours.</td></tr>
-<tr><td>Pipeline.java</td><td>Ordered stages, on/off switches, spec parsing, and what each stage did this loop.</td></tr>
-<tr><td>ShooterBrain.java</td><td>observe(tag ranges) every frame, evaluate(actual rpm) every loop. No SDK imports.</td></tr>
+<tr><td style="color:#3987e5">ShooterStages.java</td><td>The built-in stages and the registry, the list the code uses to find them. This is where you add yours.</td></tr>
+<tr><td>ShooterBrain.java</td><td>observe(tag ranges) every frame, evaluate(actual rpm) every loop. Uses no robot libraries, so it runs on a laptop.</td></tr>
 <tr><td style="color:#3987e5">ShooterConfig.java</td><td>PIPELINE spec, calibration table, motor and camera names. The sim exports this file.</td></tr>
-<tr><td>LimelightRanger.java</td><td>New camera frame in, list of ranges to goal tags out. The only hardware-facing vision code.</td></tr>
-<tr><td>ShooterCalibration.java</td><td>OpMode. Build the real distance to rpm table from real shots, save it on the hub.</td></tr>
-<tr><td>ShooterTeleOp.java</td><td>OpMode. Drive, spin to target, request a shot, see every stage on the Driver Station.</td></tr>
-<tr><td>ShooterBrainTest.java</td><td>Twenty-three automated tests that run on a laptop in seconds. No robot needed.</td></tr>
+<tr><td>ShooterCalibration.java</td><td>A robot program (an OpMode) that builds the real table from real shots and saves it on the robot.</td></tr>
+<tr><td>ShooterTeleOp.java</td><td>The driving program. Spin to target, request a shot, and see every stage's verdict on the driver's phone.</td></tr>
+<tr><td>ShooterBrainTest.java</td><td>Thirty-eight automated tests. One command runs them on a laptop in seconds, no robot: ./gradlew :TeamCode:testDebugUnitTest</td></tr>
 </table>
-<p style="position:absolute;left:128px;bottom:64px;font-size:24px;color:#7f8792">Branch: feature/shooter-vision-testbed · README.md in the package explains every file.</p>
-<aside>Only two files in blue matter for day one: ShooterStages, where a new stage goes, and ShooterConfig, where the spec goes. Everything else is plumbing they can read when curious.</aside>
+<p style="position:absolute;left:128px;bottom:64px;font-size:24px;color:#7f8792">From sim to robot: build and export, paste and send to the robot, calibrate, then drive. README.md in the package has the commands.</p>
+<aside>Only the two files in blue matter for day one: ShooterStages, where a new stage goes, and ShooterConfig, where the spec goes. The others support those two and are there when you need them.</aside>
 </section>

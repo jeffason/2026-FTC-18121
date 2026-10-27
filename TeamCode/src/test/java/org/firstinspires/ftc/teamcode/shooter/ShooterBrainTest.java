@@ -115,6 +115,18 @@ public class ShooterBrainTest {
         assertEquals((2430 + 100) * 1.1 + 200, b.getTargetRpm(), 1e-6);
     }
 
+    @Test public void throwingStageIsIgnored() {
+        RangeFilter bad = new RangeFilter() {
+            @Override public String name() { return "Bad"; }
+            @Override public List<Tunable> tunables() { return Collections.emptyList(); }
+            @Override public double filterRange(RangeFrame f, double rangeIn) { throw new IllegalStateException("boom"); }
+        };
+        ShooterBrain b = new ShooterBrain(TABLE, new Pipeline().add(bad).add(new ShooterStages.TagMean()));
+        b.observe(Arrays.asList(2.0, 4.0), 0);
+        assertEquals(3.0, b.getRangeMeters(), 1e-9);                           // Bad skipped, TagMean still ran
+        assertEquals("ignored (threw IllegalStateException)", b.getPipeline().lastEffects().get(bad));
+    }
+
     @Test public void brokenStageOutputIsIgnored() {
         VelocityModifier broken = new VelocityModifier() {
             @Override public String name() { return "Broken"; }

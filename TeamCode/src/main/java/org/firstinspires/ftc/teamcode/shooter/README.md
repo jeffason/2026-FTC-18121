@@ -31,7 +31,7 @@ OutlierReject(maxDevM=0.3); TagMedian; RollingAverage(frames=5); !FarShotBoost(s
 | File | What it is |
 |---|---|
 | `ShooterConfig.java` | The tunables: `PIPELINE` spec, calibration table, hardware names. The sim's **Export to TeamCode** panel generates this file. |
-| `ShooterBrain.java` | Pure Java decision logic. `observe(tagRanges)` every frame, `evaluate(actualRpm)` every loop. No SDK imports, so it runs in JUnit. |
+| `ShooterBrain.java` | Pure Java decision logic. `observe(tagRanges)` every frame, `evaluate(actualRpm)` every loop. It imports nothing from the robot SDK, so it runs as ordinary laptop unit tests. |
 | `Pipeline.java` | Ordered stages with on/off switches, `fromSpec` / `toSpec`, and `lastEffects()` for telemetry. |
 | `Stage`, `RangeFilter`, `VelocityModifier`, `FireGate` | The three stage interfaces and their common base. |
 | `ShooterStages.java` | The built-in stages and the `REGISTRY` the spec parser uses. **Add new stages here.** |
@@ -41,7 +41,7 @@ OutlierReject(maxDevM=0.3); TagMedian; RollingAverage(frames=5); !FarShotBoost(s
 | `CalibrationStore.java` | Saves/loads the table on the Control Hub and prints it as Java. |
 | `ShooterCalibration.java` | OpMode **Shooter: Calibration**. First-run procedure that builds the table from real shots. |
 | `ShooterTeleOp.java` | OpMode **Shooter: TeleOp**. Drive + auto-ranged shooter, live stage telemetry, gamepad tunable menu. |
-| `../../../../../../../test/java/.../shooter/ShooterBrainTest.java` | Laptop tests. |
+| `TeamCode/src/test/java/org/firstinspires/ftc/teamcode/shooter/ShooterBrainTest.java` | Laptop tests. |
 | `TeamCode/sim/shooter-brain-testbed.html` | The simulator. Open it in a browser. |
 | `TeamCode/sim/parity-vectors.txt` | Known inputs and expected outputs for every stage. The Java tests run them; the sim runs them on load and shows `parity N/N ok` in its header. The sim embeds a copy, and a test fails if the copy drifts from the file. |
 
@@ -64,10 +64,13 @@ Results land in `TeamCode/build/reports/tests/testDebugUnitTest/index.html`. No 
 
 ## Sim → robot
 
-1. Build a pipeline in the sim. Copy Java from the Export panel.
+1. Build a pipeline in the sim: add stages from the palette, read the hit rate in the stats panel, then
+   use Copy spec or Copy Java in the Export panel.
 2. Paste it over `ShooterConfig.java` (or just the spec into `PIPELINE`). Build and deploy.
-3. Run **Shooter: Calibration** once (see the procedure in its Javadoc). It saves the table on the
-   hub and prints two Java lines; paste those into `ShooterConfig` so the table is in git too.
+3. Run **Shooter: Calibration** once. Hold X to spin, dpad up/down changes the target by 25 rpm and the
+   bumpers by 100, A records a point (a point at the same spot replaces the old one), B undoes, Y saves
+   the table on the hub and prints two Java lines, Back clears, Start deletes the saved table. Paste the
+   two lines into `ShooterConfig` so the table is in git too.
 4. Run **Shooter: TeleOp**. Right trigger spins to target, right bumper requests a shot, the Driver
    Station shows each stage and what it did this loop. Dpad selects and nudges tunables, LB toggles a stage.
 
@@ -79,10 +82,12 @@ Results land in `TeamCode/build/reports/tests/testDebugUnitTest/index.html`. No 
 3. Add the twin to `DEFS` in the sim with the same name, tunables and math. Try it there first.
 4. Add a line or two to `TeamCode/sim/parity-vectors.txt` with a known input and output, and paste the
    file's new contents into the sim's `PARITY_VECTORS` block. `simDefsMatchJavaRegistry` checks names and
-   tunables match; `parityVectorsPassInJavaAndMatchTheSimCopy` checks both sides compute the same answers.
+   tunables match; `parityVectorsPassInJavaAndMatchTheSimCopy` runs the vectors in Java and checks the sim
+   embeds the same file; `simJavaScriptPassesTheParityVectors` runs the sim's JavaScript when node is installed.
 
-Keep stages pure: no hardware, no sleeping. Return `rpmIn` / `rangeIn` unchanged to be a no-op; a
-`NaN` is ignored by the pipeline, so a broken stage never breaks the shot.
+Keep stages pure: no hardware, no sleeping. A range filter or velocity modifier returns `rangeIn` or `rpmIn`
+unchanged to be a no-op. A result that is not a number, or an exception thrown by a stage, is ignored, so
+a broken stage never breaks the shot. A fire gate returns `""` to let the shot go and a short reason to hold it.
 
 ## Limelight setup
 
@@ -93,4 +98,5 @@ robot space equals camera space. Goal tag IDs: red scoring 30–33, blue scoring
 ## What the sim does not know yet
 
 The table, launch angle, exit height, goal height and flywheel constants in the sim are placeholders
-from drag-free physics. The calibration OpMode is what makes the robot right; the sim is for the logic.
+from simple physics, and the sim then adds air drag on top so the table is deliberately imperfect. The
+calibration OpMode is what makes the robot right; the sim is for the logic.

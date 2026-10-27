@@ -131,7 +131,7 @@ pre.code { font-family: var(--mono); font-size: 12px; line-height: 1.55; overflo
     <div>
       <div class="team">FTC 18121 · Limelight + flywheel bench sim · <span id="parity" title="Shared parity vectors, same file the Java tests run"></span></div>
       <h1>Shooter Brain Testbed</h1>
-      <p class="sub">Three shooter brains read the same noisy AprilTag stream. The baseline has an empty pipeline: first tag, table lookup, fire every cycle. The mentor reference is tuned. Yours is whatever you build on the right.</p>
+      <p class="sub">Three shooter brains read the same noisy AprilTag stream. The baseline has an empty pipeline. The mentor reference is a sensible hand-built pipeline. Yours is whatever you build on the right.</p>
     </div>
     <div class="row">
       <button id="btnRun" class="primary" aria-pressed="true">Pause</button>
@@ -176,8 +176,8 @@ pre.code { font-family: var(--mono); font-size: 12px; line-height: 1.55; overflo
       <div class="row" style="justify-content:space-between">
         <h2>Your pipeline</h2>
         <div class="row">
-          <button class="sm" data-preset="empty">Empty</button>
-          <button class="sm" data-preset="starter">Starter</button>
+          <button class="sm" data-preset="empty">Empty pipeline</button>
+          <button class="sm" data-preset="starter">Starter pipeline</button>
         </div>
       </div>
       <div>
@@ -187,7 +187,7 @@ pre.code { font-family: var(--mono); font-size: 12px; line-height: 1.55; overflo
       <div class="stages" id="stages"></div>
       <div class="ctl">
         <label for="specIn">Pipeline spec (same string as ShooterConfig.PIPELINE)</label>
-        <div class="row" style="flex-wrap:nowrap"><input type="text" id="specIn" spellcheck="false" placeholder="TagMedian; RollingAverage(frames=5); RecentTagGate(maxAgeMs=300)"><button class="sm" id="btnLoadSpec">Load</button></div>
+        <div class="row" style="flex-wrap:nowrap"><input type="text" id="specIn" spellcheck="false" placeholder="TagMedian; RollingAverage(frames=5); RecentTagGate(maxAgeMs=300)"><button class="sm" id="btnLoadSpec">Load spec</button></div>
         <div id="specErr" class="notes" style="color:var(--bad)"></div>
       </div>
     </aside>
@@ -233,16 +233,16 @@ pre.code { font-family: var(--mono); font-size: 12px; line-height: 1.55; overflo
   <section class="panel guide">
     <h2>Team challenge</h2>
     <ol>
-      <li><b>Start empty.</b> Press Empty, set Wander, drag 1×, noise 1×. Press Reset stats and let it run 60 s. Write down the baseline and your hit rate (they should match).</li>
-      <li><b>Fix one problem at a time.</b> Watch the event log and the range chart. Which misses are range noise? Which are the flywheel still spinning up? Which are shots at a goal that moved during a dropout? Add the one stage that targets that problem, run 60 s, record the hit rate and what changed.</li>
+      <li><b>Start empty.</b> Press Empty pipeline, set Wander, drag 1×, noise 1×. Press Reset stats and let it run 60 s. Write down the baseline and your hit rate (they should be close; each brain has its own flywheel jitter).</li>
+      <li><b>Fix one problem at a time.</b> Watch the event log and the range chart. Which misses are range noise? Which are the flywheel still spinning up? Which are shots made from an old range because the robot moved during a dropout? Add the one stage that targets that problem, run 60 s, record the hit rate and what changed.</li>
       <li><b>Explain every stage.</b> Open its code. In one sentence each, say what it reads, what it changes, and what it costs (held shots, lag).</li>
       <li><b>Beat the reference.</b> The mentor pipeline is hidden behind Reveal. Try to match or beat its hit rate before you look. Report your spec string, your hit rate, and your shots-per-minute.</li>
-      <li><b>Push it to the robot.</b> Copy the Java, paste over ShooterConfig, build, run the Shooter Calibration OpMode once for a real table, then Shooter TeleOp.</li>
+      <li><b>Push it to the robot.</b> Run <code>./gradlew :TeamCode:testDebugUnitTest</code> on your laptop first. Then copy the Java, paste over ShooterConfig, build, run the Shooter Calibration OpMode once for a real table, then Shooter TeleOp.</li>
     </ol>
-    <p class="notes" style="margin-top:10px">Writing a new stage: add an entry to the DEFS object in this page's script, and the twin class in <code>ShooterStages.java</code> with the same name and tunables. The spec string is the contract between them.</p>
+    <p class="notes" style="margin-top:10px">Writing a new stage: add its class and a REGISTRY line in <code>ShooterStages.java</code>, its twin in the DEFS object in this page's script with the same name and tunables, and a line in <code>parity-vectors.txt</code>. The spec string is the contract between them.</p>
   </section>
 
-  <p class="notes">Model assumptions: 55° launch angle, 0.35 m exit height, 1.00 m goal height, opening ±0.18 m, exit speed 0.0025 m/s per flywheel rpm. The calibration table has six points from 1 m to 5 m, from drag-free physics. Air drag shortens real flights by 2.5 cm × (ideal range − 2 m)² at 1×, which the table does not know about. Limelight runs at 30 fps. Per-tag range noise σ = 1.5 cm + 1.2 cm·d² (times the noise slider), detection probability falls with distance, 1.5% outliers, random 0.4–1.0 s dropouts. Flywheel is first-order with 0.5% jitter and loses 10% speed on each shot. Placeholders, to be tuned against the real robot.</p>
+  <p class="notes">This page is TeamCode/sim/shooter-brain-testbed.html in the team repository. How this bench is modelled. The ball leaves at 55° from 0.35 m up; the goal opening is 1.00 m up and 36 cm wide; exit speed is 0.0025 m/s per rpm. The table has six points from 1 m to 5 m worked out without air drag. Air drag then shortens every flight past 2 m, more the farther it goes (about 22 cm short at 5 m with the slider at 1×), and the table does not know that. The camera reports 30 times a second. Each tag's reading is off by a random amount that grows with distance (about 2.7 cm at 1 m, about 31.5 cm at 5 m, scaled by the noise slider), far tags are missed more often, 1.5% of readings are wild, and now and then all tags vanish for 0.4 to 1.0 s. The flywheel takes time to change speed, jitters by 0.5%, and loses 10% of its speed each time it throws a ball. All of these are placeholders until we measure the real robot.</p>
 </div>
 
 <script>
@@ -281,7 +281,7 @@ const median = xs => { const s = [...xs].sort((a, b) => a - b), n = s.length; re
 // kind 'rpm'  : run(tun, state, ctx, rpmIn)     -> rpm         ctx   = { range, tagCount, tagAgeMs, tableRpm, targetRpm, actualRpm }
 // kind 'gate' : run(tun, state, ctx)            -> '' to fire, or a reason to hold
 const DEFS = {
-  OutlierReject: { kind: 'range', desc: 'Drop tags farther than maxDevM from this frame\'s median, then average the survivors.', tun: { maxDevM: { v: 0.3, min: 0.05, max: 1, step: 0.05 } },
+  OutlierReject: { kind: 'range', desc: 'With three or four tags, drop readings farther than maxDevM from the middle reading and average the rest. With fewer, keep the first reading.', tun: { maxDevM: { v: 0.3, min: 0.05, max: 1, step: 0.05 } },
     run(tun, st, frame, rangeIn) {
       if (frame.tags.length < 3) return rangeIn;               // can't tell which one is the liar
       const med = median(frame.tags);
@@ -315,6 +315,8 @@ const DEFS = {
     run(tun, st, ctx) { const dv = ctx.actualRpm - ctx.targetRpm; return Math.abs(dv) <= tun.tolRpm ? '' : `flywheel ${dv >= 0 ? '+' : ''}${dv.toFixed(0)} rpm`; } },
 };
 const KIND_LABEL = { range: 'range filter', rpm: 'velocity modifier', gate: 'fire gate' };
+// Plain-words slider labels; the code name stays beside each so it matches the spec and the Java.
+const TUN_LABEL = { maxDevM: 'max difference from the middle reading (m)', frames: 'frames averaged', slopeRpmPerM: 'rpm change per metre', pivotM: 'pivot distance (m)', startM: 'boost starts at (m)', pctPerM: 'percent more per metre', offsetRpm: 'offset (rpm)', minTags: 'minimum tags', maxAgeMs: 'max tag age (ms)', tolRpm: 'tolerance (rpm)' };
 const REF_SPEC = 'OutlierReject(maxDevM=0.3); TagMedian; RollingAverage(frames=4); FarShotBoost(startM=2.5, pctPerM=1); RecentTagGate(maxAgeMs=300); VelocityToleranceGate(tolRpm=50)';
 const STARTER_SPEC = 'TagMean; RecentTagGate(maxAgeMs=300); VelocityToleranceGate(tolRpm=60)';
 
@@ -627,10 +629,10 @@ function renderPalette() {
 }
 function renderStages() {
   const host = $('stages'); host.innerHTML = '';
-  if (!yours.stages.length) { host.innerHTML = '<div class="empty">Empty pipeline: first tag, table lookup, fire every cycle. Same as the baseline. Add a stage above.</div>'; return; }
+  if (!yours.stages.length) { host.innerHTML = '<div class="empty">Empty pipeline: first tag, table lookup, fire every cycle. Add a stage above.</div>'; return; }
   yours.stages.forEach((s, i) => {
     const card = document.createElement('div'); card.className = `stage k-${s.def.kind}` + (s.on ? '' : ' off');
-    const tunHtml = Object.keys(s.tun).map(k => { const t = s.def.tun[k], id = `tun-${i}-${k}`; return `<div><label for="${id}"><span>${k}</span><span class="val" data-tv="${k}">${fmtNum(s.tun[k])}</span></label><input type="range" id="${id}" data-tun="${k}" min="${t.min}" max="${t.max}" step="${t.step}" value="${s.tun[k]}"></div>`; }).join('');
+    const tunHtml = Object.keys(s.tun).map(k => { const t = s.def.tun[k], id = `tun-${i}-${k}`; return `<div><label for="${id}"><span>${TUN_LABEL[k] || k} · ${k}</span><span class="val" data-tv="${k}">${fmtNum(s.tun[k])}</span></label><input type="range" id="${id}" data-tun="${k}" min="${t.min}" max="${t.max}" step="${t.step}" value="${s.tun[k]}"></div>`; }).join('');
     card.innerHTML = `
       <div class="head"><label class="check"><input type="checkbox" data-on ${s.on ? 'checked' : ''} aria-label="Enable ${s.name}"></label><span class="name">${s.name}</span><span class="kind">${KIND_LABEL[s.def.kind]}</span><span class="sp"></span>
         <button class="icon" data-mv="-1" title="Move up" ${i === 0 ? 'disabled' : ''}>▲</button><button class="icon" data-mv="1" title="Move down" ${i === yours.stages.length - 1 ? 'disabled' : ''}>▼</button><button class="icon" data-rm title="Remove">×</button></div>

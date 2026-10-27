@@ -11,7 +11,7 @@
 <div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#262a30;padding:32px;border-radius:12px">
 <p style="font-family:'JetBrains Mono', monospace;font-size:24px;color:#7f8792">2</p>
 <h3 style="font-size:34px;font-weight:600;color:#eceef1">A ball touches the wheel</h3>
-<p style="font-size:26px;color:#b4bac4;line-height:1.4">The feeder pushes a ball in. The wheel grabs it and throws it out. The wheel slows down a little each time.</p>
+<p style="font-size:26px;color:#b4bac4;line-height:1.4">The feeder, the part that pushes balls into the wheel, pushes one in. The wheel grabs it and throws it out, and slows down a little each time.</p>
 </div>
 <x-shape kind="arrow-right" style="width:64px;height:32px;background:#7f8792"></x-shape>
 <div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#262a30;padding:32px;border-radius:12px">
@@ -21,10 +21,10 @@
 </div>
 </div>
 <div style="display:flex;gap:24px">
-<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#1c2a3f;border:3px solid #3987e5;padding:28px;border-radius:12px"><p style="font-size:24px;color:#3987e5;font-weight:600">QUESTION 1</p><p style="font-size:34px;font-weight:600">How far is the goal?</p></div>
-<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#262240;border:3px solid #9085e9;padding:28px;border-radius:12px"><p style="font-size:24px;color:#9085e9;font-weight:600">QUESTION 2</p><p style="font-size:34px;font-weight:600">How fast must the wheel spin?</p></div>
-<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#3a2e14;border:3px solid #eda100;padding:28px;border-radius:12px"><p style="font-size:24px;color:#eda100;font-weight:600">QUESTION 3</p><p style="font-size:34px;font-weight:600">Is now a good moment to shoot?</p></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#1c2a3f;border:3px solid #3987e5;padding:28px;border-radius:12px"><p style="font-size:24px;color:#3987e5;font-weight:600">QUESTION 1</p><p style="font-size:34px;font-weight:600">How far is the goal?</p><p style="font-size:24px;color:#b4bac4">Answered by range filters: small switchable pieces of code that clean up the camera's distance reading</p></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#262240;border:3px solid #9085e9;padding:28px;border-radius:12px"><p style="font-size:24px;color:#9085e9;font-weight:600">QUESTION 2</p><p style="font-size:34px;font-weight:600">How fast must the wheel spin?</p><p style="font-size:24px;color:#b4bac4">Answered by a velocity table (a list that turns distance into RPM), then by velocity modifiers that adjust that RPM</p></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px;background:#3a2e14;border:3px solid #eda100;padding:28px;border-radius:12px"><p style="font-size:24px;color:#eda100;font-weight:600">QUESTION 3</p><p style="font-size:34px;font-weight:600">Is now a good moment to shoot?</p><p style="font-size:24px;color:#b4bac4">Answered by fire gates: checks that can hold the shot until it is safe</p></div>
 </div>
-<p style="position:absolute;left:128px;bottom:64px;font-size:24px;color:#7f8792">Every piece of code tonight answers one of these three questions. Remember the three colors.</p>
-<aside>If there is a flywheel on the bench, spin it up by hand and feed a ball. Students should see that a slow wheel throws short. Then ask the three questions and let them guess what a robot would need to answer each one.</aside>
+<p style="position:absolute;left:128px;bottom:64px;font-size:24px;color:#7f8792">Use the blue, violet and amber labels to tell which of the three jobs a piece of code does.</p>
+<aside>Watch the flywheel on the bench: spin it slowly and feed a ball, and it falls short. Spin it faster and it goes farther. Now guess what the robot would need to answer each of the three questions.</aside>
 </section>
