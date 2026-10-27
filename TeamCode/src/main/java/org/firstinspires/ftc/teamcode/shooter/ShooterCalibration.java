@@ -22,7 +22,7 @@ import java.util.List;
  *   5. Move to a new distance and repeat. Five or six points from closest to farthest is plenty.
  *   6. Press Y to save to the Control Hub. The screen prints two Java lines to paste into ShooterConfig.
  *
- * Back clears all points. Start deletes the saved file (so ShooterConfig defaults are used again).
+ * Back clears all points. Start deletes the saved file and puts the ShooterConfig defaults back in force.
  */
 @TeleOp(name = "Shooter: Calibration", group = "Shooter")
 public class ShooterCalibration extends LinearOpMode {
@@ -57,10 +57,12 @@ public class ShooterCalibration extends LinearOpMode {
         double targetRpm = 2000;
         String javaOut = "";
         int tagsSeen = 0;
+        long lastFrameMs = 0;
 
         while (opModeIsActive()) {
+            long now = System.currentTimeMillis();
             List<Double> ranges = ranger.pollRangesMeters();
-            if (ranges != null) { readout.observe(ranges, System.currentTimeMillis()); tagsSeen = ranges.size(); }
+            if (ranges != null) { readout.observe(ranges, now); tagsSeen = ranges.size(); lastFrameMs = now; }
 
             // --- rpm adjust (edge-triggered) ---
             if (gamepad1.dpad_up && !prev.dpad_up) targetRpm += 25;
@@ -79,7 +81,7 @@ public class ShooterCalibration extends LinearOpMode {
             }
             if (gamepad1.b && !prev.b && !points.isEmpty()) points.remove(points.size() - 1);
             if (gamepad1.back && !prev.back) { points.clear(); javaOut = ""; }
-            if (gamepad1.start && !prev.start) { CalibrationStore.delete(); javaOut = "Deleted saved table; ShooterConfig defaults will be used."; }
+            if (gamepad1.start && !prev.start) { CalibrationStore.delete(); javaOut = CalibrationStore.lastLoadMessage(); }
             if (gamepad1.y && !prev.y && points.size() >= 2) {
                 double[] m = new double[points.size()], r = new double[points.size()];
                 for (int i = 0; i < points.size(); i++) { m[i] = points.get(i)[0]; r[i] = points.get(i)[1]; }
@@ -97,7 +99,9 @@ public class ShooterCalibration extends LinearOpMode {
             // --- screen ---
             telemetry.addLine("X hold: spin  |  dpad ±25  bumpers ±100  |  A record  B undo  Y save  Back clear");
             telemetry.addData("Limelight", ranger.isConnected() ? "connected" : "NOT CONNECTED");
-            telemetry.addData("Range", readout.hasTarget() ? String.format("%.2f m  (%d tags this frame)", readout.getRangeMeters(), tagsSeen) : "no target tags in view");
+            telemetry.addData("Range", readout.hasTarget()
+                    ? String.format("%.2f m  (%d tags, last frame %d ms ago)", readout.getRangeMeters(), tagsSeen, now - lastFrameMs)
+                    : "no target tags in view");
             telemetry.addData("Flywheel", "target %.0f  actual %.0f rpm", targetRpm, actualRpm);
             telemetry.addData("Points", "%d of %d (same spot replaces)", points.size(), MAX_POINTS);
             List<double[]> sorted = new ArrayList<>(points);

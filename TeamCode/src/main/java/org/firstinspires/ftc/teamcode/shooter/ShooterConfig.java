@@ -20,6 +20,16 @@ public final class ShooterConfig {
     public static double[] CALIBRATION_METERS = { 1.00, 1.75, 2.50, 3.25, 4.00, 5.00 };
     public static double[] CALIBRATION_RPM    = { 1751, 2001, 2256, 2512, 2746, 3031 };
 
+    /** The values above as shipped, so CalibrationStore can put them back after a saved table is deleted. */
+    static final double[] DEFAULT_CALIBRATION_METERS = CALIBRATION_METERS.clone();
+    static final double[] DEFAULT_CALIBRATION_RPM = CALIBRATION_RPM.clone();
+
+    /** True while the table in use is the sim placeholder rather than one measured on this robot. */
+    public static boolean usingPlaceholderTable() {
+        return java.util.Arrays.equals(CALIBRATION_METERS, DEFAULT_CALIBRATION_METERS)
+            && java.util.Arrays.equals(CALIBRATION_RPM, DEFAULT_CALIBRATION_RPM);
+    }
+
     // --- Hardware ---
     public static String FLYWHEEL_MOTOR = "shooter";
     public static double FLYWHEEL_TICKS_PER_REV = 28;      // encoder ticks per flywheel revolution (28 for a bare goBILDA 5202/5203 shaft)

@@ -47,9 +47,12 @@ public final class ShooterBrain {
      * its last estimate and the RecentTagGate decides whether that is still trustworthy.
      */
     public void observe(List<Double> tagRangesMeters, long nowMs) {
-        if (tagRangesMeters == null || tagRangesMeters.isEmpty()) return;
-        RangeFrame frame = new RangeFrame(tagRangesMeters, nowMs);
-        estimate = pipeline.filterRange(frame, tagRangesMeters.get(0));
+        if (tagRangesMeters == null) return;
+        List<Double> clean = new java.util.ArrayList<>();
+        for (Double r : tagRangesMeters) if (r != null && Double.isFinite(r) && r > 0) clean.add(r);
+        if (clean.isEmpty()) return;
+        RangeFrame frame = new RangeFrame(clean, nowMs);
+        estimate = pipeline.filterRange(frame, clean.get(0));
         lastSeenMs = nowMs;
         lastTagCount = frame.tags.size();
     }

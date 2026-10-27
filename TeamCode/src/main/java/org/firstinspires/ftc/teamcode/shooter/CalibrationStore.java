@@ -22,6 +22,9 @@ import java.util.Locale;
 public final class CalibrationStore {
     public static final String FILE_NAME = "shooter_calibration.txt";
 
+    /** A real table is a few hundred bytes; anything bigger is not a calibration file. */
+    public static final long MAX_FILE_BYTES = 16 * 1024;
+
     /** Distances closer than this are the same measuring spot; their rpm values are averaged. */
     public static final double SAME_SPOT_METERS = 0.01;
 
@@ -73,6 +76,11 @@ public final class CalibrationStore {
     public static boolean loadIntoConfig() {
         File f = file();
         if (!f.exists()) { lastLoadMessage = "no saved table on the hub"; return false; }
+        if (f.length() > MAX_FILE_BYTES) {
+            lastLoadMessage = "INVALID saved table (" + f.length() + " bytes, limit " + MAX_FILE_BYTES + "); using ShooterConfig defaults";
+            RobotLog.ee("Shooter", lastLoadMessage);
+            return false;
+        }
         try {
             double[] m = null, r = null;
             for (String line : ReadWriteFile.readFile(f).split("\n")) {
@@ -94,7 +102,18 @@ public final class CalibrationStore {
         }
     }
 
-    public static boolean delete() { return file().delete(); }
+    /**
+     * Deletes the saved table and puts the ShooterConfig defaults back in force for this run.
+     * Returns false if a file exists and could not be deleted; lastLoadMessage() says what happened.
+     */
+    public static boolean delete() {
+        File f = file();
+        boolean gone = !f.exists() || f.delete();
+        ShooterConfig.CALIBRATION_METERS = ShooterConfig.DEFAULT_CALIBRATION_METERS.clone();
+        ShooterConfig.CALIBRATION_RPM = ShooterConfig.DEFAULT_CALIBRATION_RPM.clone();
+        lastLoadMessage = gone ? "saved table deleted; ShooterConfig defaults in use" : "could NOT delete " + f.getName() + "; defaults in use until restart";
+        return gone;
+    }
 
     /** Two Java lines ready to paste into ShooterConfig. */
     public static String asJava(double[] meters, double[] rpm) {

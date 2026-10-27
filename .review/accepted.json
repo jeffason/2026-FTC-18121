@@ -1,5 +1,16 @@
 [
-  { "ruleId": "STRUCT-NO-DUPLICATE-LOGIC", "subject": "TeamCode/sim/shooter-brain-testbed.html",
+  {
+    "ruleId": "STRUCT-NO-DUPLICATE-LOGIC",
+    "subject": "TeamCode/sim/shooter-brain-testbed.html",
     "reason": "The browser sim is a deliberate JavaScript twin of the Java stages so students can run it with no toolchain; the spec string is the shared contract and ShooterBrainTest.everyRegisteredStageParsesWithDefaults plus the sim's own parser round-trip guard both sides. Decided 2026-10-26.",
-    "acceptedBy": "jeffason", "at": "2026-10-26" }
+    "acceptedBy": "jeffason",
+    "at": "2026-10-26"
+  },
+  {
+    "ruleId": "STRUCT-SEED-DATA-STAYS-OUT",
+    "subject": "TeamCode/src/main/java/org/firstinspires/ftc/teamcode/shooter/ShooterConfig.java",
+    "reason": "The placeholder table lets the OpModes initialise and the sim export compile before calibration night; TeleOp prints an UNCALIBRATED warning while it is in use (ShooterConfig.usingPlaceholderTable) and CalibrationStore replaces it from the hub. Decided 2026-10-26.",
+    "acceptedBy": "jeffason",
+    "at": "2026-10-26"
+  }
 ]

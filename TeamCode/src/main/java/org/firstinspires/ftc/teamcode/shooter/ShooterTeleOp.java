@@ -57,6 +57,8 @@ public class ShooterTeleOp extends OpMode {
         brain = new ShooterBrain(CalibrationTable.fromConfig(), ShooterStages.defaultPipeline());
 
         telemetry.addData("Calibration", CalibrationStore.lastLoadMessage());
+        if (ShooterConfig.usingPlaceholderTable())
+            telemetry.addLine("UNCALIBRATED: table is the sim placeholder. Run Shooter: Calibration before relying on range shots.");
         telemetry.addData("Feeder", feeder == null ? "none configured (feed by hand)" : "servo ready");
     }
 

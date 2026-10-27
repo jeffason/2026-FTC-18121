@@ -27,7 +27,11 @@ public final class Pipeline {
     private final Map<Stage, String> effects = new LinkedHashMap<>();
 
     public Pipeline add(Stage s) { return add(s, true); }
-    public Pipeline add(Stage s, boolean enabled) { stages.add(s); if (!enabled) off.add(s); return this; }
+    public Pipeline add(Stage s, boolean enabled) {
+        if (!(s instanceof RangeFilter) && !(s instanceof VelocityModifier) && !(s instanceof FireGate))
+            throw new IllegalArgumentException(s.name() + " implements none of RangeFilter, VelocityModifier or FireGate");
+        stages.add(s); if (!enabled) off.add(s); return this;
+    }
 
     public List<Stage> stages() { return Collections.unmodifiableList(stages); }
     public boolean isEnabled(Stage s) { return !off.contains(s); }

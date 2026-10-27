@@ -189,6 +189,80 @@ public class ShooterBrainTest {
         assertEquals(p.toSpec(), Pipeline.fromSpec(p.toSpec(), ShooterStages.REGISTRY).toSpec());
     }
 
+    /**
+     * The sim-to-robot contract: every stage in ShooterStages.REGISTRY exists in the sim's DEFS with the
+     * same kind and the same tunables (name, default, min, max, step), and the sim defines nothing extra.
+     */
+    @Test public void simDefsMatchJavaRegistry() throws java.io.IOException {
+        java.io.File sim = new java.io.File("sim/shooter-brain-testbed.html");
+        if (!sim.exists()) sim = new java.io.File("TeamCode/sim/shooter-brain-testbed.html");
+        assertTrue("sim file not found from " + new java.io.File(".").getAbsolutePath(), sim.exists());
+        String html = new String(java.nio.file.Files.readAllBytes(sim.toPath()), java.nio.charset.StandardCharsets.UTF_8);
+        int start = html.indexOf("const DEFS = {"), end = html.indexOf("\n};", start);
+        assertTrue("DEFS block not found in sim", start > 0 && end > start);
+        String defs = html.substring(start, end);
+
+        java.util.regex.Matcher stage = java.util.regex.Pattern.compile("(?m)^  (\\w+): \\{ kind: '(range|rpm|gate)'").matcher(defs);
+        java.util.Map<String, String> simKinds = new java.util.LinkedHashMap<>();
+        java.util.Map<String, java.util.List<String>> simTunables = new java.util.LinkedHashMap<>();
+        java.util.List<int[]> spans = new java.util.ArrayList<>();
+        java.util.List<String> names = new java.util.ArrayList<>();
+        while (stage.find()) { names.add(stage.group(1)); simKinds.put(stage.group(1), stage.group(2)); spans.add(new int[] { stage.start() }); }
+        java.util.regex.Pattern tun = java.util.regex.Pattern.compile("(\\w+): \\{ v: ([-\\d.]+), min: ([-\\d.]+), max: ([-\\d.]+), step: ([-\\d.]+) \\}");
+        for (int i = 0; i < names.size(); i++) {
+            String body = defs.substring(spans.get(i)[0], i + 1 < names.size() ? spans.get(i + 1)[0] : defs.length());
+            java.util.regex.Matcher m = tun.matcher(body);
+            java.util.List<String> ts = new java.util.ArrayList<>();
+            while (m.find()) ts.add(m.group(1) + "=" + m.group(2) + "[" + m.group(3) + ".." + m.group(4) + "/" + m.group(5) + "]");
+            simTunables.put(names.get(i), ts);
+        }
+
+        java.util.Map<String, String> javaKinds = new java.util.LinkedHashMap<>();
+        java.util.Map<String, java.util.List<String>> javaTunables = new java.util.LinkedHashMap<>();
+        for (java.util.Map.Entry<String, java.util.function.Supplier<Stage>> e : ShooterStages.REGISTRY.entrySet()) {
+            Stage s = e.getValue().get();
+            assertEquals("registry key must equal name()", e.getKey(), s.name());
+            javaKinds.put(s.name(), s instanceof RangeFilter ? "range" : s instanceof VelocityModifier ? "rpm" : "gate");
+            java.util.List<String> ts = new java.util.ArrayList<>();
+            for (Tunable t : s.tunables()) ts.add(t.name + "=" + num(t.get()) + "[" + num(t.min) + ".." + num(t.max) + "/" + num(t.step) + "]");
+            javaTunables.put(s.name(), ts);
+        }
+        assertEquals("stage names and kinds", javaKinds, simKinds);
+        assertEquals("tunables (name=default[min..max/step])", javaTunables, simTunables);
+        assertTrue(javaKinds.size() >= 10);
+    }
+
+    private static String num(double v) {
+        String s = String.format(java.util.Locale.US, "%.4f", v).replaceAll("0+$", "").replaceAll("\\.$", "");
+        return s.isEmpty() ? "0" : s;
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void stageOfNoKindIsRejected() {
+        new Pipeline().add(new Stage() {
+            @Override public String name() { return "Nothing"; }
+            @Override public List<Tunable> tunables() { return Collections.emptyList(); }
+        });
+    }
+
+    @Test public void nullAndNonFiniteRangesAreIgnored() {
+        ShooterBrain b = brain("TagMean");
+        b.observe(Arrays.asList(null, Double.NaN, 3.0, -1.0, 3.2), 0);
+        assertEquals(3.1, b.getRangeMeters(), 1e-9);
+        assertEquals(2, b.getLastTagCount());
+        b.observe(Arrays.asList((Double) null), 33);
+        assertEquals(3.1, b.getRangeMeters(), 1e-9);
+    }
+
+    @Test public void placeholderTableIsRecognised() {
+        double[] m = ShooterConfig.CALIBRATION_METERS, r = ShooterConfig.CALIBRATION_RPM;
+        try {
+            assertTrue(ShooterConfig.usingPlaceholderTable());
+            ShooterConfig.CALIBRATION_RPM = new double[] { 1, 2, 3, 4, 5, 6 };
+            assertFalse(ShooterConfig.usingPlaceholderTable());
+        } finally { ShooterConfig.CALIBRATION_METERS = m; ShooterConfig.CALIBRATION_RPM = r; }
+    }
+
     @Test public void defaultConfigPipelineHoldsStaleTargetsAndUnreadyFlywheel() {
         ShooterBrain b = new ShooterBrain(TABLE, ShooterStages.defaultPipeline());
         b.observe(Arrays.asList(3.0, 3.0, 3.0), 1000);
