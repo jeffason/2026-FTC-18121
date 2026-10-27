@@ -1,26 +1,24 @@
 <section id="sensor" data-transition="fade" style="background:#f4f5f7;color:#15181d;font-family:'Barlow', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
-<h2 style="font-family:'Barlow Condensed', Arial, sans-serif;font-size:80px;font-weight:600;line-height:1.05">What the Limelight hands us</h2>
+<h2 style="font-family:'Barlow Condensed', Arial, sans-serif;font-size:84px;font-weight:600;line-height:1.05">What the camera gives us</h2>
 <div style="display:flex;gap:64px;align-items:center">
 <div style="width:760px;display:flex;flex-direction:column;gap:24px;align-items:center;background:#e4e7ec;padding:48px;border-radius:12px">
-<p style="font-size:26px;color:#4d545e">Goal face · red scoring cluster</p>
+<p style="font-size:26px;color:#4d545e">Goal face</p>
 <div style="display:flex;gap:28px">
 <div style="width:120px;height:120px;background:#4d545e;border-radius:8px;display:flex;align-items:center;justify-content:center"><p style="font-family:'JetBrains Mono', monospace;font-size:34px;color:#f4f5f7">30</p></div>
 <div style="width:120px;height:120px;background:#4d545e;border-radius:8px;display:flex;align-items:center;justify-content:center"><p style="font-family:'JetBrains Mono', monospace;font-size:34px;color:#f4f5f7">31</p></div>
 <div style="width:120px;height:120px;border:4px dashed #7b828c;border-radius:8px;display:flex;align-items:center;justify-content:center"><p style="font-family:'JetBrains Mono', monospace;font-size:34px;color:#7b828c">32</p></div>
 <div style="width:120px;height:120px;background:#4d545e;border-radius:8px;display:flex;align-items:center;justify-content:center"><p style="font-family:'JetBrains Mono', monospace;font-size:34px;color:#f4f5f7">33</p></div>
 </div>
-<p style="font-family:'JetBrains Mono', monospace;font-size:26px;color:#2a78d6">Example: 3.02 m · 2.97 m · — · 3.11 m</p>
-<p style="font-size:24px;color:#7b828c">Three tags seen this frame, one missed</p>
+<p style="font-family:'JetBrains Mono', monospace;font-size:28px;color:#2a78d6">3.02 m · 2.97 m · — · 3.11 m</p>
 </div>
 <div style="flex:1;display:flex;flex-direction:column;gap:28px">
-<ul style="font-size:32px;line-height:1.5;color:#15181d">
-<li>Every goal carries four AprilTags. Red scoring is IDs 30 to 33, blue scoring 42 to 45.</li>
-<li>For each tag it sees clearly, the Limelight works out where that tag is in 3D. We keep one number: the distance to it along the floor, in metres.</li>
-<li>So one frame is a list of zero to four ranges. That list is what the camera hands to the brain.</li>
-<li>Thirty frames a second. The camera alone tells us the range; the robot does not need to know where it is on the field for this.</li>
+<ul style="font-size:38px;line-height:1.5;color:#15181d">
+<li>Four tags on every goal</li>
+<li>Four distances, 30 times a second</li>
+<li>Sometimes fewer. Sometimes none.</li>
 </ul>
 </div>
 </div>
-<p style="position:absolute;left:128px;bottom:64px;font-size:24px;color:#7b828c">Code: LimelightRanger.java reads the camera.</p>
-<aside>Four tags means four separate measurements of the same distance, so averaging them is a good first idea. And one tag is missing here: the list is sometimes shorter, and sometimes empty.</aside>
+<p style="position:absolute;left:128px;bottom:64px;font-size:24px;color:#7b828c">Red goal tags 30 to 33, blue goal tags 42 to 45. Example readings shown.</p>
+<aside>Every goal carries four AprilTags; the red scoring goal is IDs 30 to 33 and the blue one is 42 to 45. For each tag the Limelight sees clearly, it works out where that tag is, and we keep one number: the distance to it along the floor, in meters. So one frame is a list of up to four distances, thirty times a second, and that list is what the camera hands to the brain. Four tags means four separate measurements of the same distance, so averaging them is a good first idea. And look at tag 32: one is missing here. The list is sometimes shorter, and sometimes empty. The camera alone tells us the range; the robot does not need to know where it is on the field for this.</aside>
 </section>

@@ -96,7 +96,7 @@ public final class ShooterStages {
         @Override public double adjustRpm(ShotContext c, double rpm) { return rpm + slope.get() * (c.rangeMeters - pivot.get()); }
     }
 
-    /** Beyond startM, adds pctPerM percent per extra metre. Compensates for air drag on long shots. */
+    /** Beyond startM, adds pctPerM percent per extra meter. Compensates for air drag on long shots. */
     public static final class FarShotBoost implements VelocityModifier {
         final Tunable start = new Tunable("startM", 2.5, 1, 5, 0.25);
         final Tunable pct = new Tunable("pctPerM", 2.0, 0, 10, 0.25);

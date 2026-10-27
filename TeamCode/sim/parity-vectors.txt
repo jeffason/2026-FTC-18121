@@ -1,6 +1,6 @@
 # Shooter stage parity vectors. One line per check, run by ShooterBrainTest (Java) and by the sim on load (JavaScript).
 # kind spec | input | expected
-# range: input = frames separated by ';', each a comma list of tag ranges in metres ('-' = a frame with no tags); expected = final range estimate
+# range: input = frames separated by ';', each a comma list of tag ranges in meters ('-' = a frame with no tags); expected = final range estimate
 # rpm:   input = range=<m> rpmIn=<rpm>; expected = rpm after the velocity modifiers
 # gate:  input = tagAgeMs=<ms> tagCount=<n> targetRpm=<rpm> actualRpm=<rpm>; expected = FIRE or HOLD
 range OutlierReject(maxDevM=0.3) | 3.0,3.02,2.98,3.8 | 3.0

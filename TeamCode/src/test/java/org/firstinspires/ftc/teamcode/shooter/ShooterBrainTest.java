@@ -412,7 +412,7 @@ public class ShooterBrainTest {
 
     @Test public void nullAndNonFiniteRangesAreIgnored() {
         ShooterBrain b = brain("TagMean");
-        b.observe(Arrays.asList(null, Double.NaN, 3.0, -1.0, 3.2), 0);
+        b.observe(Arrays.asList(null, Double.NaN, Double.POSITIVE_INFINITY, 3.0, -1.0, Double.NEGATIVE_INFINITY, 3.2), 0);
         assertEquals(3.1, b.getRangeMeters(), 1e-9);
         assertEquals(2, b.getLastTagCount());
         b.observe(Arrays.asList((Double) null), 33);
@@ -424,7 +424,10 @@ public class ShooterBrainTest {
         try {
             assertTrue(ShooterConfig.usingPlaceholderTable());
             ShooterConfig.CALIBRATION_RPM = new double[] { 1, 2, 3, 4, 5, 6 };
-            assertFalse(ShooterConfig.usingPlaceholderTable());
+            assertFalse("changed rpm is not the placeholder", ShooterConfig.usingPlaceholderTable());
+            ShooterConfig.CALIBRATION_RPM = r;
+            ShooterConfig.CALIBRATION_METERS = new double[] { 1.1, 1.85, 2.6, 3.35, 4.1, 5.1 };
+            assertFalse("changed distances are not the placeholder", ShooterConfig.usingPlaceholderTable());
         } finally { ShooterConfig.CALIBRATION_METERS = m; ShooterConfig.CALIBRATION_RPM = r; }
     }
 

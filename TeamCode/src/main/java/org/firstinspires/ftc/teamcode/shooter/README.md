@@ -92,7 +92,7 @@ a broken stage never breaks the shot. A fire gate returns `""` to let the shot g
 ## Limelight setup
 
 Pipeline type AprilTag, family 36h11, tag size 3.25 in. Under **3D**, enter the camera's offset from
-robot centre so "target pose in robot space" is measured from the robot, not the lens. Without it,
+robot center so "target pose in robot space" is measured from the robot, not the lens. Without it,
 robot space equals camera space. Goal tag IDs: red scoring 30–33, blue scoring 42–45 (set `TARGET_TAG_IDS`).
 
 ## What the sim does not know yet

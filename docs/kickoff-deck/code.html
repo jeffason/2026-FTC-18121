@@ -1,15 +1,14 @@
-<section id="code" data-transition="fade" style="background:#15181d;color:#eceef1;font-family:'Barlow', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
-<h2 style="font-family:'Barlow Condensed', Arial, sans-serif;font-size:80px;font-weight:600;line-height:1.05;color:#eceef1">The code, in one package</h2>
-<p style="font-family:'JetBrains Mono', monospace;font-size:26px;color:#7f8792">TeamCode/src/main/java/org/firstinspires/ftc/teamcode/shooter/</p>
-<table style="font-size:27px;color:#eceef1;border:1px solid #343941;background:#1e2126">
-<tr style="background:#262a30"><th style="width:30%;text-align:left;padding:16px 24px">File</th><th style="width:70%;text-align:left">Job</th></tr>
-<tr><td style="color:#3987e5">ShooterStages.java</td><td>The built-in stages and the registry, the list the code uses to find them. This is where you add yours.</td></tr>
-<tr><td>ShooterBrain.java</td><td>observe(tag ranges) every frame, evaluate(actual rpm) every loop. Uses no robot libraries, so it runs on a laptop.</td></tr>
-<tr><td style="color:#3987e5">ShooterConfig.java</td><td>PIPELINE spec, calibration table, motor and camera names. The sim exports this file.</td></tr>
-<tr><td>ShooterCalibration.java</td><td>A robot program (an OpMode) that builds the real table from real shots and saves it on the robot.</td></tr>
-<tr><td>ShooterTeleOp.java</td><td>The driving program. Spin to target, request a shot, and see every stage's verdict on the driver's phone.</td></tr>
-<tr><td>ShooterBrainTest.java</td><td>Thirty-eight automated tests. One command runs them on a laptop in seconds, no robot: ./gradlew :TeamCode:testDebugUnitTest</td></tr>
+<section id="code" data-transition="fade" style="background:#15181d;color:#eceef1;font-family:'Barlow', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:44px">
+<h2 style="font-family:'Barlow Condensed', Arial, sans-serif;font-size:84px;font-weight:600;line-height:1.05;color:#eceef1">Where the code lives</h2>
+<p style="font-family:'JetBrains Mono', monospace;font-size:28px;color:#7f8792">TeamCode/src/main/java/org/firstinspires/ftc/teamcode/shooter/</p>
+<table style="font-size:32px;color:#eceef1;border:1px solid #343941;background:#1e2126">
+<tr style="background:#262a30"><th style="width:42%;text-align:left;padding:16px 26px">File</th><th style="width:58%;text-align:left">Job</th></tr>
+<tr><td style="color:#3987e5">ShooterStages.java</td><td>the stages; add yours here</td></tr>
+<tr><td style="color:#3987e5">ShooterConfig.java</td><td>the spec and the table</td></tr>
+<tr><td>ShooterCalibration, ShooterTeleOp</td><td>the two robot programs</td></tr>
+<tr><td>ShooterBrainTest.java</td><td>39 tests, one command</td></tr>
 </table>
-<p style="position:absolute;left:128px;bottom:64px;font-size:24px;color:#7f8792">From sim to robot: build and export, paste and send to the robot, calibrate, then drive. README.md in the package has the commands.</p>
-<aside>Only the two files in blue matter for day one: ShooterStages, where a new stage goes, and ShooterConfig, where the spec goes. The others support those two and are there when you need them.</aside>
+<p style="font-family:'JetBrains Mono', monospace;font-size:30px;background:#262a30;color:#eceef1;padding:22px 36px;border-radius:12px">./gradlew :TeamCode:testDebugUnitTest</p>
+<p style="position:absolute;left:128px;bottom:64px;font-size:24px;color:#7f8792">README.md in that folder has the rest.</p>
+<aside>Only the two files in blue matter on day one. ShooterStages is where a new stage goes, and ShooterConfig is where your spec goes. The brain itself, ShooterBrain, is told what the camera saw every frame and decides the RPM and whether to fire every loop; it needs no robot, so it runs on a laptop. ShooterCalibration builds the real table from real shots and saves it on the robot. ShooterTeleOp drives, spins to target, and shows every stage's verdict on the driver's phone. That one command runs all 39 tests on your laptop in a few seconds, no robot needed. The README in that folder has more detail and every command.</aside>
 </section>

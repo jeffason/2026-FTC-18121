@@ -13,11 +13,11 @@ import java.util.List;
 
 /**
  * The only class that talks to the Limelight. Turns each new camera frame into a list of
- * horizontal ranges (metres) to the goal's AprilTags, which is exactly what
+ * horizontal ranges (meters) to the goal's AprilTags, which is exactly what
  * {@link ShooterBrain#observe} wants.
  *
  * Setup on the Limelight web UI: pipeline type AprilTag, family 36h11, tag size 3.25 in,
- * and set the camera's offset from robot centre under "3D" so "target pose in robot space"
+ * and set the camera's offset from robot center under "3D" so "target pose in robot space"
  * is measured from the robot, not the lens. Without that offset, robot space equals camera space.
  */
 public final class LimelightRanger {

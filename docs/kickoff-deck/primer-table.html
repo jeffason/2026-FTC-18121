@@ -1,8 +1,7 @@
-<section id="primer-table" data-transition="fade" style="background:#f4f5f7;color:#15181d;font-family:'Barlow', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
-<p style="font-family:'JetBrains Mono', monospace;font-size:26px;color:#7b828c;letter-spacing:4px;text-transform:uppercase">Shooter 101</p>
-<h2 style="font-family:'Barlow Condensed', Arial, sans-serif;font-size:80px;font-weight:600;line-height:1.05">The velocity table</h2>
-<div style="display:flex;gap:64px;align-items:center">
-<table style="width:640px;font-size:32px;color:#15181d;border:1px solid #d3d6dc;background:#ffffff;font-variant-numeric:tabular-nums">
+<section id="primer-table" data-transition="fade" style="background:#f4f5f7;color:#15181d;font-family:'Barlow', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:44px">
+<h2 style="font-family:'Barlow Condensed', Arial, sans-serif;font-size:84px;font-weight:600;line-height:1.05">The velocity table</h2>
+<div style="display:flex;gap:72px;align-items:center">
+<table style="width:640px;font-size:34px;color:#15181d;border:1px solid #d3d6dc;background:#ffffff;font-variant-numeric:tabular-nums">
 <tr style="background:#e9ebef"><th style="width:50%;text-align:left;padding:18px 28px">Range</th><th style="width:50%;text-align:left">Flywheel</th></tr>
 <tr><td>1.0 m</td><td>1750 rpm</td></tr>
 <tr><td>2.0 m</td><td>2080 rpm</td></tr>
@@ -10,21 +9,11 @@
 <tr><td>3.0 m</td><td>2430 rpm</td></tr>
 <tr><td>4.0 m</td><td>2750 rpm</td></tr>
 </table>
-<div style="flex:1;display:flex;flex-direction:column;gap:28px">
-<div style="display:flex;flex-direction:column;gap:10px">
-<h3 style="font-size:38px;font-weight:600">Measured points</h3>
-<p style="font-size:28px;color:#4d545e;line-height:1.45">We park the robot at a few distances, change the RPM until balls go in, and write down what worked. In a real table the white rows are those measurements; these are example numbers.</p>
-</div>
-<div style="display:flex;flex-direction:column;gap:10px">
-<h3 style="font-size:38px;font-weight:600;color:#2a78d6">In between: interpolation</h3>
-<p style="font-size:28px;color:#4d545e;line-height:1.45">At 2.5 m we are halfway between 2 m and 3 m, so we use halfway between 2080 and 2430. The blue row is worked out, not measured. The code draws a straight line between neighbouring rows.</p>
-</div>
-<div style="display:flex;flex-direction:column;gap:10px">
-<h3 style="font-size:38px;font-weight:600">A table beats a formula here</h3>
-<p style="font-size:28px;color:#4d545e;line-height:1.45">A formula needs the ball's weight, air drag and how much the wheel squeezes it. A table only needs real shots: park, shoot, write down what worked.</p>
+<div style="flex:1;display:flex;flex-direction:column;gap:36px">
+<div style="display:flex;flex-direction:column;gap:8px"><h3 style="font-size:44px;font-weight:600">Measured rows</h3><p style="font-size:30px;color:#4d545e">Park. Shoot. Write down what worked.</p></div>
+<div style="display:flex;flex-direction:column;gap:8px"><h3 style="font-size:44px;font-weight:600;color:#2a78d6">In between</h3><p style="font-size:30px;color:#4d545e">A straight line between neighbors.</p></div>
 </div>
 </div>
-</div>
-<p style="position:absolute;left:128px;bottom:64px;font-size:24px;color:#7b828c">Example numbers, not measured on our robot. The real table comes from calibration night.</p>
-<aside>What RPM would you use for 3.5 m? About 2590, halfway between the 3 m and 4 m rows. Now imagine the camera is wrong by half a metre: you look up the wrong row, and the ball misses.</aside>
+<p style="position:absolute;left:128px;bottom:64px;font-size:24px;color:#7b828c">Example numbers. The real table comes from calibration night.</p>
+<aside>We park the robot at a few distances, change the RPM until balls go in, and write down what worked. That gives rows like the white ones; these particular numbers are examples, and the real ones get measured on calibration night. The 2.5 meter row was never measured. We are halfway between 2 and 3 meters, so we use halfway between 2080 and 2430. The code draws a straight line between neighboring rows; that is called interpolation. Try one: what RPM for 3.5 meters? About 2590, halfway between the 3 and 4 meter rows. Now imagine the camera is wrong by half a meter: you look up the wrong row and the ball misses. A formula would need the ball's weight, air drag and how much the wheel squeezes it. A table only needs real shots.</aside>
 </section>

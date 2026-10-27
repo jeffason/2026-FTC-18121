@@ -1,29 +1,28 @@
-<section id="primer-words" data-transition="fade" style="background:#f4f5f7;color:#15181d;font-family:'Barlow', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
-<p style="font-family:'JetBrains Mono', monospace;font-size:26px;color:#7b828c;letter-spacing:4px;text-transform:uppercase">Shooter 101</p>
-<h2 style="font-family:'Barlow Condensed', Arial, sans-serif;font-size:80px;font-weight:600;line-height:1.05">Words we will use all season</h2>
-<div style="display:flex;gap:32px">
-<table style="font-size:26px;color:#15181d;border:1px solid #d3d6dc;background:#ffffff">
-<tr style="background:#e9ebef"><th style="width:32%;text-align:left;padding:14px 20px">Word</th><th style="width:68%;text-align:left">Means</th></tr>
-<tr><td style="color:#2a78d6">Flywheel</td><td>The spinning wheel that throws the ball.</td></tr>
-<tr><td style="color:#2a78d6">RPM</td><td>Revolutions per minute. How fast the flywheel spins.</td></tr>
-<tr><td style="color:#2a78d6">Target</td><td>The RPM we are asking for.</td></tr>
-<tr><td style="color:#2a78d6">Spin-up</td><td>The time the wheel takes to reach the target after a change or a shot.</td></tr>
-<tr><td style="color:#2a78d6">Tolerance</td><td>How far from the target still counts as close enough to shoot.</td></tr>
-<tr><td style="color:#2a78d6">Velocity table</td><td>A list of distances and the RPM each one needs. Measured on our robot, not guessed.</td></tr>
-<tr><td style="color:#2a78d6">Noise</td><td>Small random error in a reading. Every sensor has some.</td></tr>
+<section id="primer-words" data-transition="fade" style="background:#f4f5f7;color:#15181d;font-family:'Barlow', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:44px">
+<h2 style="font-family:'Barlow Condensed', Arial, sans-serif;font-size:84px;font-weight:600;line-height:1.05">Words we use</h2>
+<div style="display:flex;gap:40px">
+<table style="font-size:30px;color:#15181d;border:1px solid #d3d6dc;background:#ffffff">
+<tr style="background:#e9ebef"><th style="width:38%;text-align:left;padding:14px 22px">Word</th><th style="width:62%;text-align:left">Means</th></tr>
+<tr><td style="color:#2a78d6">Flywheel</td><td>the throwing wheel</td></tr>
+<tr><td style="color:#2a78d6">RPM</td><td>wheel speed</td></tr>
+<tr><td style="color:#2a78d6">Target</td><td>the RPM we ask for</td></tr>
+<tr><td style="color:#2a78d6">Spin-up</td><td>time to reach the target</td></tr>
+<tr><td style="color:#2a78d6">Tolerance</td><td>close enough to shoot</td></tr>
+<tr><td style="color:#2a78d6">Velocity table</td><td>distance to RPM</td></tr>
+<tr><td style="color:#2a78d6">Noise</td><td>random error in a reading</td></tr>
 </table>
-<table style="font-size:26px;color:#15181d;border:1px solid #d3d6dc;background:#ffffff">
-<tr style="background:#e9ebef"><th style="width:32%;text-align:left;padding:14px 20px">Word</th><th style="width:68%;text-align:left">Means</th></tr>
-<tr><td style="color:#2a78d6">AprilTag</td><td>A black and white square marker with an ID number, like a QR code for robots.</td></tr>
-<tr><td style="color:#2a78d6">Limelight</td><td>Our smart camera. It finds AprilTags and reports where they are.</td></tr>
-<tr><td style="color:#2a78d6">Range</td><td>Distance from the robot to the goal along the floor, in metres.</td></tr>
-<tr><td style="color:#2a78d6">Dropout</td><td>A moment when the camera sees no tags at all.</td></tr>
-<tr><td style="color:#2a78d6">Stage</td><td>One small, switchable piece of shooter code with one job.</td></tr>
-<tr><td style="color:#2a78d6">Pipeline</td><td>Our ordered list of stages. The Limelight also has a setting called pipeline; that one is a camera mode.</td></tr>
-<tr><td style="color:#2a78d6">Spec</td><td>The one-line text that lists the stages and their settings.</td></tr>
-<tr><td style="color:#2a78d6">Tunable</td><td>A named number inside a stage that you can adjust.</td></tr>
+<table style="font-size:30px;color:#15181d;border:1px solid #d3d6dc;background:#ffffff">
+<tr style="background:#e9ebef"><th style="width:38%;text-align:left;padding:14px 22px">Word</th><th style="width:62%;text-align:left">Means</th></tr>
+<tr><td style="color:#2a78d6">AprilTag</td><td>square marker with an ID</td></tr>
+<tr><td style="color:#2a78d6">Limelight</td><td>our camera</td></tr>
+<tr><td style="color:#2a78d6">Range</td><td>distance to the goal</td></tr>
+<tr><td style="color:#2a78d6">Dropout</td><td>no tags seen</td></tr>
+<tr><td style="color:#2a78d6">Stage</td><td>one small switchable job</td></tr>
+<tr><td style="color:#2a78d6">Pipeline</td><td>our list of stages</td></tr>
+<tr><td style="color:#2a78d6">Spec</td><td>the pipeline as one line</td></tr>
+<tr><td style="color:#2a78d6">Tunable</td><td>a number you can adjust</td></tr>
 </table>
 </div>
-<p style="position:absolute;left:128px;bottom:64px;font-size:24px;color:#7b828c">Metres and RPM everywhere. The code, the simulator and this deck use the same words.</p>
-<aside>You do not need to memorise these now; they come back one at a time. Two of them trip people up: target RPM is what we ask for and actual RPM is what the wheel is doing, and range is simply how far away the goal is.</aside>
+<p style="position:absolute;left:128px;bottom:64px;font-size:24px;color:#7b828c">Distances in meters, speeds in RPM, everywhere.</p>
+<aside>You do not need to memorize these now; they come back one at a time tonight. A few need a second sentence. Target RPM is what we ask for; actual RPM is what the wheel is really doing, and tolerance is how far apart those two can be and still shoot. Range is the distance from the robot to the goal along the floor, in meters. An AprilTag is like a QR code for robots, and the Limelight is the camera that finds them. A stage is one small, switchable piece of shooter code with one job; a pipeline is our ordered list of them; a spec is that list written as one line of text; a tunable is a named number inside a stage you can adjust. One warning: the Limelight also has a setting called pipeline, which is a camera mode, not ours.</aside>
 </section>

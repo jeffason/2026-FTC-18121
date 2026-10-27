@@ -242,7 +242,7 @@ pre.code { font-family: var(--mono); font-size: 12px; line-height: 1.55; overflo
     <p class="notes" style="margin-top:10px">Writing a new stage: add its class and a REGISTRY line in <code>ShooterStages.java</code>, its twin in the DEFS object in this page's script with the same name and tunables, and a line in <code>parity-vectors.txt</code>. The spec string is the contract between them.</p>
   </section>
 
-  <p class="notes">This page is TeamCode/sim/shooter-brain-testbed.html in the team repository. How this bench is modelled. The ball leaves at 55° from 0.35 m up; the goal opening is 1.00 m up and 36 cm wide; exit speed is 0.0025 m/s per rpm. The table has six points from 1 m to 5 m worked out without air drag. Air drag then shortens every flight past 2 m, more the farther it goes (about 22 cm short at 5 m with the slider at 1×), and the table does not know that. The camera reports 30 times a second. Each tag's reading is off by a random amount that grows with distance (about 2.7 cm at 1 m, about 31.5 cm at 5 m, scaled by the noise slider), far tags are missed more often, 1.5% of readings are wild, and now and then all tags vanish for 0.4 to 1.0 s. The flywheel takes time to change speed, jitters by 0.5%, and loses 10% of its speed each time it throws a ball. All of these are placeholders until we measure the real robot.</p>
+  <p class="notes">This page is TeamCode/sim/shooter-brain-testbed.html in the team repository. How this bench is modeled. The ball leaves at 55° from 0.35 m up; the goal opening is 1.00 m up and 36 cm wide; exit speed is 0.0025 m/s per rpm. The table has six points from 1 m to 5 m worked out without air drag. Air drag then shortens every flight past 2 m, more the farther it goes (about 22 cm short at 5 m with the slider at 1×), and the table does not know that. The camera reports 30 times a second. Each tag's reading is off by a random amount that grows with distance (about 2.7 cm at 1 m, about 31.5 cm at 5 m, scaled by the noise slider), far tags are missed more often, 1.5% of readings are wild, and now and then all tags vanish for 0.4 to 1.0 s. The flywheel takes time to change speed, jitters by 0.5%, and loses 10% of its speed each time it throws a ball. All of these are placeholders until we measure the real robot.</p>
 </div>
 
 <script>
@@ -277,7 +277,7 @@ const mean = xs => { let s = 0, n = 0; for (const x of xs) { s += x; n++; } retu
 const median = xs => { const s = [...xs].sort((a, b) => a - b), n = s.length; return n ? (n % 2 ? s[(n - 1) / 2] : (s[n / 2 - 1] + s[n / 2]) / 2) : NaN; };
 
 // ====================== stage definitions (twins of ShooterStages.java) ======================
-// kind 'range': run(tun, state, frame, rangeIn) -> metres      frame = { tags: [...], t }
+// kind 'range': run(tun, state, frame, rangeIn) -> meters      frame = { tags: [...], t }
 // kind 'rpm'  : run(tun, state, ctx, rpmIn)     -> rpm         ctx   = { range, tagCount, tagAgeMs, tableRpm, targetRpm, actualRpm }
 // kind 'gate' : run(tun, state, ctx)            -> '' to fire, or a reason to hold
 const DEFS = {
@@ -303,7 +303,7 @@ const DEFS = {
     } },
   RangeTrim: { kind: 'rpm', desc: 'Adds slope × (range − pivot). Fixes a table that is right at the pivot but drifts with distance.', tun: { slopeRpmPerM: { v: 0, min: -200, max: 200, step: 5 }, pivotM: { v: 3, min: 1, max: 5, step: 0.25 } },
     run(tun, st, ctx, rpm) { return rpm + tun.slopeRpmPerM * (ctx.range - tun.pivotM); } },
-  FarShotBoost: { kind: 'rpm', desc: 'Beyond startM, adds pctPerM percent per extra metre. Compensates for air drag on long shots.', tun: { startM: { v: 2.5, min: 1, max: 5, step: 0.25 }, pctPerM: { v: 2, min: 0, max: 10, step: 0.25 } },
+  FarShotBoost: { kind: 'rpm', desc: 'Beyond startM, adds pctPerM percent per extra meter. Compensates for air drag on long shots.', tun: { startM: { v: 2.5, min: 1, max: 5, step: 0.25 }, pctPerM: { v: 2, min: 0, max: 10, step: 0.25 } },
     run(tun, st, ctx, rpm) { const extra = Math.max(0, ctx.range - tun.startM); return rpm * (1 + extra * tun.pctPerM / 100); } },
   ManualOffset: { kind: 'rpm', desc: 'Flat trim. On the robot the driver nudges this from the gamepad.', tun: { offsetRpm: { v: 0, min: -400, max: 400, step: 10 } },
     run(tun, st, ctx, rpm) { return rpm + tun.offsetRpm; } },
@@ -316,7 +316,7 @@ const DEFS = {
 };
 const KIND_LABEL = { range: 'range filter', rpm: 'velocity modifier', gate: 'fire gate' };
 // Plain-words slider labels; the code name stays beside each so it matches the spec and the Java.
-const TUN_LABEL = { maxDevM: 'max difference from the middle reading (m)', frames: 'frames averaged', slopeRpmPerM: 'rpm change per metre', pivotM: 'pivot distance (m)', startM: 'boost starts at (m)', pctPerM: 'percent more per metre', offsetRpm: 'offset (rpm)', minTags: 'minimum tags', maxAgeMs: 'max tag age (ms)', tolRpm: 'tolerance (rpm)' };
+const TUN_LABEL = { maxDevM: 'max difference from the middle reading (m)', frames: 'frames averaged', slopeRpmPerM: 'rpm change per meter', pivotM: 'pivot distance (m)', startM: 'boost starts at (m)', pctPerM: 'percent more per meter', offsetRpm: 'offset (rpm)', minTags: 'minimum tags', maxAgeMs: 'max tag age (ms)', tolRpm: 'tolerance (rpm)' };
 const REF_SPEC = 'OutlierReject(maxDevM=0.3); TagMedian; RollingAverage(frames=4); FarShotBoost(startM=2.5, pctPerM=1); RecentTagGate(maxAgeMs=300); VelocityToleranceGate(tolRpm=50)';
 const STARTER_SPEC = 'TagMean; RecentTagGate(maxAgeMs=300); VelocityToleranceGate(tolRpm=60)';
 
@@ -355,7 +355,7 @@ function fromSpec(spec) {
 const PARITY_VECTORS = `
 # Shooter stage parity vectors. One line per check, run by ShooterBrainTest (Java) and by the sim on load (JavaScript).
 # kind spec | input | expected
-# range: input = frames separated by ';', each a comma list of tag ranges in metres ('-' = a frame with no tags); expected = final range estimate
+# range: input = frames separated by ';', each a comma list of tag ranges in meters ('-' = a frame with no tags); expected = final range estimate
 # rpm:   input = range=<m> rpmIn=<rpm>; expected = rpm after the velocity modifiers
 # gate:  input = tagAgeMs=<ms> tagCount=<n> targetRpm=<rpm> actualRpm=<rpm>; expected = FIRE or HOLD
 range OutlierReject(maxDevM=0.3) | 3.0,3.02,2.98,3.8 | 3.0

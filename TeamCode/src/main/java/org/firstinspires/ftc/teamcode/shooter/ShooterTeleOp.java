@@ -41,10 +41,11 @@ public class ShooterTeleOp extends OpMode {
 
     @Override
     public void init() {
-        fl = hardwareMap.get(DcMotor.class, "front_left_drive");
-        fr = hardwareMap.get(DcMotor.class, "front_right_drive");
-        bl = hardwareMap.get(DcMotor.class, "back_left_drive");
-        br = hardwareMap.get(DcMotor.class, "back_right_drive");
+        // Motor names match the team's TELE_RoosterDrive_v1 configuration.
+        fl = hardwareMap.get(DcMotor.class, "frontLeftDrive");
+        fr = hardwareMap.get(DcMotor.class, "frontRightDrive");
+        bl = hardwareMap.get(DcMotor.class, "backLeftDrive");
+        br = hardwareMap.get(DcMotor.class, "backRightDrive");
         fl.setDirection(DcMotor.Direction.REVERSE);
         bl.setDirection(DcMotor.Direction.REVERSE);
 
@@ -59,7 +60,7 @@ public class ShooterTeleOp extends OpMode {
         try { pipeline = ShooterStages.defaultPipeline(); }
         catch (IllegalArgumentException e) { pipeline = new Pipeline(); pipelineError = e.getMessage(); }
         brain = new ShooterBrain(CalibrationTable.fromConfig(), pipeline);
-        if (!pipelineError.isEmpty()) telemetry.addLine("PIPELINE SPEC INVALID, running with no stages: " + pipelineError);
+        if (!pipelineError.isEmpty()) telemetry.addLine("PIPELINE SPEC INVALID; shots are blocked until it is fixed: " + pipelineError);
 
         telemetry.addData("Calibration", CalibrationStore.lastLoadMessage());
         if (ShooterConfig.usingPlaceholderTable())
@@ -89,7 +90,8 @@ public class ShooterTeleOp extends OpMode {
 
         // --- shot request ---
         String shotStatus = "idle";
-        if (gamepad1.right_bumper && !spin) shotStatus = "hold right trigger to spin up first";
+        if (gamepad1.right_bumper && !pipelineError.isEmpty()) shotStatus = "holding: PIPELINE spec invalid, fix ShooterConfig";
+        else if (gamepad1.right_bumper && !spin) shotStatus = "hold right trigger to spin up first";
         else if (gamepad1.right_bumper) {
             if (d.fire && now >= feedUntilMs) { feedOneBall(now); shotStatus = "FIRE"; }
             else if (!d.fire) shotStatus = "holding: " + d.holdReason;
@@ -101,7 +103,7 @@ public class ShooterTeleOp extends OpMode {
         prev.copy(gamepad1);
 
         // --- screen ---
-        if (!pipelineError.isEmpty()) telemetry.addLine("PIPELINE SPEC INVALID, running with no stages: " + pipelineError);
+        if (!pipelineError.isEmpty()) telemetry.addLine("PIPELINE SPEC INVALID; shots are blocked until it is fixed: " + pipelineError);
         telemetry.addData("Limelight", ranger.status());
         telemetry.addData("Range", brain.hasTarget() ? String.format("%.2f m", brain.getRangeMeters()) : "no target");
         telemetry.addData("Flywheel", "table %.0f  target %.0f  actual %.0f rpm", d.tableRpm, d.targetRpm, actualRpm);

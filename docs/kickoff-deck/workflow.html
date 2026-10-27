@@ -1,28 +1,11 @@
-<section id="workflow" data-transition="fade" style="background:#f4f5f7;color:#15181d;font-family:'Barlow', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
-<h2 style="font-family:'Barlow Condensed', Arial, sans-serif;font-size:80px;font-weight:600;line-height:1.05">From sim to robot</h2>
+<section id="workflow" data-transition="fade" style="background:#f4f5f7;color:#15181d;font-family:'Barlow', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:56px">
+<h2 style="font-family:'Barlow Condensed', Arial, sans-serif;font-size:84px;font-weight:600;line-height:1.05">From sim to robot</h2>
 <div style="display:flex;gap:28px">
-<div style="flex:1;display:flex;flex-direction:column;gap:16px;background:#ffffff;padding:36px;border:1px solid #d3d6dc;border-radius:12px">
-<p style="font-family:'JetBrains Mono', monospace;font-size:24px;color:#2a78d6;font-weight:500">STEP 1</p>
-<h3 style="font-size:36px;font-weight:600;line-height:1.15">Build it in the sim</h3>
-<p style="font-size:27px;color:#4d545e;line-height:1.45">Add stages, tune, run 60 s in Wander. Record hit rate and shots per minute.</p>
+<div style="flex:1;display:flex;flex-direction:column;gap:14px;background:#ffffff;padding:40px;border:1px solid #d3d6dc;border-radius:12px"><p style="font-family:'JetBrains Mono', monospace;font-size:26px;color:#2a78d6;font-weight:500">1</p><h3 style="font-size:40px;font-weight:600;line-height:1.15">Build it in the sim</h3></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:14px;background:#ffffff;padding:40px;border:1px solid #d3d6dc;border-radius:12px"><p style="font-family:'JetBrains Mono', monospace;font-size:26px;color:#2a78d6;font-weight:500">2</p><h3 style="font-size:40px;font-weight:600;line-height:1.15">Prove it with the tests</h3></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:14px;background:#ffffff;padding:40px;border:1px solid #d3d6dc;border-radius:12px"><p style="font-family:'JetBrains Mono', monospace;font-size:26px;color:#2a78d6;font-weight:500">3</p><h3 style="font-size:40px;font-weight:600;line-height:1.15">Put it on the robot, calibrate once</h3></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:14px;background:#ffffff;padding:40px;border:1px solid #d3d6dc;border-radius:12px"><p style="font-family:'JetBrains Mono', monospace;font-size:26px;color:#2a78d6;font-weight:500">4</p><h3 style="font-size:40px;font-weight:600;line-height:1.15">Drive it</h3></div>
 </div>
-<div style="flex:1;display:flex;flex-direction:column;gap:16px;background:#ffffff;padding:36px;border:1px solid #d3d6dc;border-radius:12px">
-<p style="font-family:'JetBrains Mono', monospace;font-size:24px;color:#2a78d6;font-weight:500">STEP 2</p>
-<h3 style="font-size:36px;font-weight:600;line-height:1.15">Prove it on the laptop</h3>
-<p style="font-size:27px;color:#4d545e;line-height:1.45">New stage? Add a test. Then run all the tests. They pass in seconds on a laptop, no robot.</p>
-</div>
-<div style="flex:1;display:flex;flex-direction:column;gap:16px;background:#ffffff;padding:36px;border:1px solid #d3d6dc;border-radius:12px">
-<p style="font-family:'JetBrains Mono', monospace;font-size:24px;color:#2a78d6;font-weight:500">STEP 3</p>
-<h3 style="font-size:36px;font-weight:600;line-height:1.15">Put it on the robot</h3>
-<p style="font-size:27px;color:#4d545e;line-height:1.45">Copy Java from the sim and paste it over ShooterConfig.java. Build the project and send it to the robot. Then run Shooter: Calibration once: five or six distances, A to record, Y to save.</p>
-</div>
-<div style="flex:1;display:flex;flex-direction:column;gap:16px;background:#ffffff;padding:36px;border:1px solid #d3d6dc;border-radius:12px">
-<p style="font-family:'JetBrains Mono', monospace;font-size:24px;color:#2a78d6;font-weight:500">STEP 4</p>
-<h3 style="font-size:36px;font-weight:600;line-height:1.15">Drive it</h3>
-<p style="font-size:27px;color:#4d545e;line-height:1.45">Run Shooter: TeleOp. Right trigger spins the wheel, right bumper asks for a shot, and the driver's phone shows every stage's verdict.</p>
-</div>
-</div>
-<p style="font-family:'JetBrains Mono', monospace;font-size:30px;background:#1e2126;color:#eceef1;padding:28px 40px;border-radius:12px">./gradlew :TeamCode:testDebugUnitTest</p>
-<p style="position:absolute;left:128px;bottom:64px;font-size:24px;color:#7b828c">The table you measure on the robot replaces the sim's placeholder table.</p>
-<aside>The simulator is where you test the logic. Calibration is where the robot gets its real numbers. Both have to happen before a range shot counts.</aside>
+<p style="font-size:34px;color:#4d545e">The sim tests the logic. Calibration gives the robot its real numbers.</p>
+<aside>Step one: build a pipeline in the sim, run it for 60 seconds in Wander, and write down the hit rate and shots per minute. Step two: if you wrote a new stage, add a test for it, then run all the tests with that one command; they pass in seconds on a laptop, no robot. Step three: copy the Java from the sim and paste it over ShooterConfig.java, build the project and send it to the robot, then run Shooter: Calibration once: five or six distances, A to record each point, Y to save. The table you measure on the robot replaces the sim's placeholder table. Step four: run Shooter: TeleOp. The right trigger spins the wheel, the right bumper asks for a shot, and the driver's phone shows every stage's verdict. Both halves have to happen before a range shot counts: the simulator for the logic, calibration for the numbers.</aside>
 </section>

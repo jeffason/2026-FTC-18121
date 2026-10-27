@@ -1,23 +1,22 @@
 <section id="problem" data-transition="fade" style="background:#f4f5f7;color:#15181d;font-family:'Barlow', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:56px">
-<h2 style="font-family:'Barlow Condensed', Arial, sans-serif;font-size:80px;font-weight:600;line-height:1.05">A good table is not enough</h2>
-<p style="font-size:34px;color:#4d545e;line-height:1.4;width:1500px">We measure distance to the goal, look up the flywheel speed that distance needs, and shoot. Three things break that on a real field.</p>
+<h2 style="font-family:'Barlow Condensed', Arial, sans-serif;font-size:84px;font-weight:600;line-height:1.05">Three things break a plain table</h2>
 <div style="display:flex;gap:32px">
-<div style="flex:1;display:flex;flex-direction:column;gap:16px;background:#ffffff;padding:40px;border:1px solid #d3d6dc;border-radius:12px">
-<p style="font-family:'JetBrains Mono', monospace;font-size:24px;color:#2a78d6;font-weight:500">1 · RANGE NOISE</p>
-<h3 style="font-size:40px;font-weight:600;line-height:1.15">The camera guesses</h3>
-<p style="font-size:28px;color:#4d545e;line-height:1.4">Tags are 3.25 inches wide. In the simulator, one tag's range at 5 m wobbles by about 30 cm, and now and then it is simply wrong.</p>
+<div style="flex:1;display:flex;flex-direction:column;gap:16px;background:#ffffff;padding:44px;border:1px solid #d3d6dc;border-radius:12px">
+<p style="font-family:'JetBrains Mono', monospace;font-size:24px;color:#2a78d6;font-weight:500">RANGE NOISE</p>
+<h3 style="font-size:44px;font-weight:600;line-height:1.15">The camera guesses</h3>
+<p style="font-size:30px;color:#4d545e">About ±30 cm at 5 m</p>
 </div>
-<div style="flex:1;display:flex;flex-direction:column;gap:16px;background:#ffffff;padding:40px;border:1px solid #d3d6dc;border-radius:12px">
-<p style="font-family:'JetBrains Mono', monospace;font-size:24px;color:#6250d6;font-weight:500">2 · SPIN-UP</p>
-<h3 style="font-size:40px;font-weight:600;line-height:1.15">The wheel lags</h3>
-<p style="font-size:28px;color:#4d545e;line-height:1.4">Every shot steals speed from the flywheel. Feed the next ball too early and it leaves slow and falls short.</p>
+<div style="flex:1;display:flex;flex-direction:column;gap:16px;background:#ffffff;padding:44px;border:1px solid #d3d6dc;border-radius:12px">
+<p style="font-family:'JetBrains Mono', monospace;font-size:24px;color:#6250d6;font-weight:500">SPIN-UP</p>
+<h3 style="font-size:44px;font-weight:600;line-height:1.15">The wheel lags</h3>
+<p style="font-size:30px;color:#4d545e">Every shot slows it down</p>
 </div>
-<div style="flex:1;display:flex;flex-direction:column;gap:16px;background:#ffffff;padding:40px;border:1px solid #d3d6dc;border-radius:12px">
-<p style="font-family:'JetBrains Mono', monospace;font-size:24px;color:#c98500;font-weight:500">3 · DROPOUTS</p>
-<h3 style="font-size:40px;font-weight:600;line-height:1.15">The goal disappears</h3>
-<p style="font-size:28px;color:#4d545e;line-height:1.4">Something blocks the tags for a moment. If we moved meanwhile, we are aiming at where the goal used to be.</p>
+<div style="flex:1;display:flex;flex-direction:column;gap:16px;background:#ffffff;padding:44px;border:1px solid #d3d6dc;border-radius:12px">
+<p style="font-family:'JetBrains Mono', monospace;font-size:24px;color:#c98500;font-weight:500">DROPOUTS</p>
+<h3 style="font-size:44px;font-weight:600;line-height:1.15">The goal disappears</h3>
+<p style="font-size:30px;color:#4d545e">Tags blocked, robot still moving</p>
 </div>
 </div>
-<p style="position:absolute;left:128px;bottom:64px;font-size:24px;color:#7b828c">Each problem gets its own fix. That is the whole design.</p>
-<aside>An empty pipeline shoots anyway in all three cases. Blue stages fix how far, violet stages fix how fast, amber gates decide when.</aside>
+<p style="position:absolute;left:128px;bottom:64px;font-size:24px;color:#7b828c">Each one gets its own small fix. You build them one at a time.</p>
+<aside>We measure the distance, look up the RPM, and shoot. Three things break that on a real field. First, the camera guesses: the tags are only 3.25 inches wide, so in the simulator one tag's range at 5 meters wobbles by about 30 centimeters, and now and then it is simply wrong. Second, the wheel lags: every shot steals speed from the flywheel, and if we feed the next ball too early it leaves slow and falls short. Third, dropouts: something blocks the tags for a moment, and if we moved meanwhile we are aiming at where the goal used to be. An empty pipeline shoots anyway in all three cases. Blue stages fix how far, violet stages fix how fast, amber gates decide when.</aside>
 </section>
