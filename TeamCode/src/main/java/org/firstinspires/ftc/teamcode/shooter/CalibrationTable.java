@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode.shooter;
 
 /** Distance (m) -> flywheel rpm, with linear interpolation between measured points. */
 public final class CalibrationTable {
-    public final double[] meters, rpm;
+    private final double[] meters, rpm;
 
     public CalibrationTable(double[] meters, double[] rpm) {
         if (meters.length != rpm.length || meters.length < 2)
@@ -21,7 +21,13 @@ public final class CalibrationTable {
         return new CalibrationTable(ShooterConfig.CALIBRATION_METERS, ShooterConfig.CALIBRATION_RPM);
     }
 
-    public double rpmFor(double rangeMeters) { return interpolate(meters, rpm, rangeMeters); }
+    /** Copies, so a caller cannot break the validated ordering. */
+    public double[] meters() { return meters.clone(); }
+    public double[] rpm() { return rpm.clone(); }
+    public int size() { return meters.length; }
+
+    /** NaN in, NaN out; a non-finite range is not a shot. */
+    public double rpmFor(double rangeMeters) { return Double.isFinite(rangeMeters) ? interpolate(meters, rpm, rangeMeters) : Double.NaN; }
 
     /** Piecewise-linear lookup, clamped to the table ends. xs must be strictly increasing. */
     public static double interpolate(double[] xs, double[] ys, double x) {

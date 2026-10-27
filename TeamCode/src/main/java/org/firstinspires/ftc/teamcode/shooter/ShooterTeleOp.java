@@ -33,6 +33,7 @@ public class ShooterTeleOp extends OpMode {
     private ShooterBrain brain;
     private final Gamepad prev = new Gamepad();
     private int tunableIndex = 0;
+    private String pipelineError = "";
     private long feedUntilMs = 0;
 
     private static final double FEEDER_REST = 0.0, FEEDER_PUSH = 0.6;
@@ -54,7 +55,11 @@ public class ShooterTeleOp extends OpMode {
 
         CalibrationStore.loadIntoConfig();
         ranger = new LimelightRanger(hardwareMap);
-        brain = new ShooterBrain(CalibrationTable.fromConfig(), ShooterStages.defaultPipeline());
+        Pipeline pipeline;
+        try { pipeline = ShooterStages.defaultPipeline(); }
+        catch (IllegalArgumentException e) { pipeline = new Pipeline(); pipelineError = e.getMessage(); }
+        brain = new ShooterBrain(CalibrationTable.fromConfig(), pipeline);
+        if (!pipelineError.isEmpty()) telemetry.addLine("PIPELINE SPEC INVALID, running with no stages: " + pipelineError);
 
         telemetry.addData("Calibration", CalibrationStore.lastLoadMessage());
         if (ShooterConfig.usingPlaceholderTable())
@@ -84,7 +89,8 @@ public class ShooterTeleOp extends OpMode {
 
         // --- shot request ---
         String shotStatus = "idle";
-        if (gamepad1.right_bumper) {
+        if (gamepad1.right_bumper && !spin) shotStatus = "hold right trigger to spin up first";
+        else if (gamepad1.right_bumper) {
             if (d.fire && now >= feedUntilMs) { feedOneBall(now); shotStatus = "FIRE"; }
             else if (!d.fire) shotStatus = "holding: " + d.holdReason;
             else shotStatus = "feeding";
@@ -95,7 +101,8 @@ public class ShooterTeleOp extends OpMode {
         prev.copy(gamepad1);
 
         // --- screen ---
-        telemetry.addData("Limelight", ranger.isConnected() ? "connected" : "NOT CONNECTED (check USB and the camera's pipeline)");
+        if (!pipelineError.isEmpty()) telemetry.addLine("PIPELINE SPEC INVALID, running with no stages: " + pipelineError);
+        telemetry.addData("Limelight", ranger.status());
         telemetry.addData("Range", brain.hasTarget() ? String.format("%.2f m", brain.getRangeMeters()) : "no target");
         telemetry.addData("Flywheel", "table %.0f  target %.0f  actual %.0f rpm", d.tableRpm, d.targetRpm, actualRpm);
         telemetry.addData("Shot", shotStatus);

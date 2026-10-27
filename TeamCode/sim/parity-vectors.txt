@@ -1,0 +1,31 @@
+# Shooter stage parity vectors. One line per check, run by ShooterBrainTest (Java) and by the sim on load (JavaScript).
+# kind spec | input | expected
+# range: input = frames separated by ';', each a comma list of tag ranges in metres ('-' = a frame with no tags); expected = final range estimate
+# rpm:   input = range=<m> rpmIn=<rpm>; expected = rpm after the velocity modifiers
+# gate:  input = tagAgeMs=<ms> tagCount=<n> targetRpm=<rpm> actualRpm=<rpm>; expected = FIRE or HOLD
+range OutlierReject(maxDevM=0.3) | 3.0,3.02,2.98,3.8 | 3.0
+range OutlierReject(maxDevM=0.3) | 3.0,3.8 | 3.0
+range OutlierReject(maxDevM=0.1); TagMedian | 3.0,3.1,3.2,5.0 | 3.15
+range TagMean | 3.9,3.0,3.1,3.0 | 3.25
+range TagMedian | 3.9,3.0,3.1,3.0 | 3.05
+range TagMedian | 3.9,3.0,3.1 | 3.1
+range TagMean | 2.5 ; - | 2.5
+range RollingAverage(frames=3) | 1.0 ; 2.0 ; 3.0 ; 6.0 | 3.666667
+range RollingAverage(frames=2.6) | 1.0 ; 2.0 ; 3.0 | 2.0
+range TagMedian; RollingAverage(frames=2) | 2.0,2.0,9.0 ; 4.0,4.0,0.5 | 3.0
+rpm ManualOffset(offsetRpm=100) | range=3 rpmIn=2430 | 2530
+rpm FarShotBoost(startM=2, pctPerM=10) | range=3 rpmIn=2530 | 2783
+rpm FarShotBoost(startM=2.5, pctPerM=1) | range=5 rpmIn=3000 | 3075
+rpm FarShotBoost(startM=2.5, pctPerM=1) | range=2 rpmIn=3000 | 3000
+rpm RangeTrim(slopeRpmPerM=100, pivotM=1) | range=3 rpmIn=2783 | 2983
+rpm RangeTrim(slopeRpmPerM=-50, pivotM=3) | range=1 rpmIn=1750 | 1850
+rpm ManualOffset(offsetRpm=100); FarShotBoost(startM=2, pctPerM=10); !RangeTrim(slopeRpmPerM=100, pivotM=1) | range=3 rpmIn=2430 | 2783
+gate VelocityToleranceGate(tolRpm=60) | tagAgeMs=0 tagCount=1 targetRpm=2430 actualRpm=2300 | HOLD
+gate VelocityToleranceGate(tolRpm=60) | tagAgeMs=0 tagCount=1 targetRpm=2430 actualRpm=2489 | FIRE
+gate RecentTagGate(maxAgeMs=300) | tagAgeMs=301 tagCount=1 targetRpm=2430 actualRpm=2430 | HOLD
+gate RecentTagGate(maxAgeMs=300) | tagAgeMs=300 tagCount=1 targetRpm=2430 actualRpm=2430 | FIRE
+gate !RecentTagGate(maxAgeMs=300) | tagAgeMs=5000 tagCount=1 targetRpm=2430 actualRpm=2430 | FIRE
+gate TagCountGate(minTags=2) | tagAgeMs=0 tagCount=1 targetRpm=2430 actualRpm=2430 | HOLD
+gate TagCountGate(minTags=2) | tagAgeMs=0 tagCount=2 targetRpm=2430 actualRpm=2430 | FIRE
+gate RecentTagGate(maxAgeMs=100); VelocityToleranceGate(tolRpm=10) | tagAgeMs=500 tagCount=1 targetRpm=2430 actualRpm=1000 | HOLD
+gate RecentTagGate(maxAgeMs=100); VelocityToleranceGate(tolRpm=10) | tagAgeMs=50 tagCount=1 targetRpm=2430 actualRpm=2435 | FIRE

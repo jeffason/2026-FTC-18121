@@ -43,6 +43,7 @@ OutlierReject(maxDevM=0.3); TagMedian; RollingAverage(frames=5); !FarShotBoost(s
 | `ShooterTeleOp.java` | OpMode **Shooter: TeleOp**. Drive + auto-ranged shooter, live stage telemetry, gamepad tunable menu. |
 | `../../../../../../../test/java/.../shooter/ShooterBrainTest.java` | Laptop tests. |
 | `TeamCode/sim/shooter-brain-testbed.html` | The simulator. Open it in a browser. |
+| `TeamCode/sim/parity-vectors.txt` | Known inputs and expected outputs for every stage. The Java tests run them; the sim runs them on load and shows `parity N/N ok` in its header. The sim embeds a copy, and a test fails if the copy drifts from the file. |
 
 ## Run the sim locally
 
@@ -76,7 +77,9 @@ Results land in `TeamCode/build/reports/tests/testDebugUnitTest/index.html`. No 
    Name tunables as identifiers (`maxAgeMs`), give them sane min/max/step.
 2. Add one line to `REGISTRY`.
 3. Add the twin to `DEFS` in the sim with the same name, tunables and math. Try it there first.
-4. Add a test in `ShooterBrainTest`. `everyRegisteredStageParsesWithDefaults` already covers parsing.
+4. Add a line or two to `TeamCode/sim/parity-vectors.txt` with a known input and output, and paste the
+   file's new contents into the sim's `PARITY_VECTORS` block. `simDefsMatchJavaRegistry` checks names and
+   tunables match; `parityVectorsPassInJavaAndMatchTheSimCopy` checks both sides compute the same answers.
 
 Keep stages pure: no hardware, no sleeping. Return `rpmIn` / `rangeIn` unchanged to be a no-op; a
 `NaN` is ignored by the pipeline, so a broken stage never breaks the shot.

@@ -194,10 +194,7 @@ public class ShooterBrainTest {
      * same kind and the same tunables (name, default, min, max, step), and the sim defines nothing extra.
      */
     @Test public void simDefsMatchJavaRegistry() throws java.io.IOException {
-        java.io.File sim = new java.io.File("sim/shooter-brain-testbed.html");
-        if (!sim.exists()) sim = new java.io.File("TeamCode/sim/shooter-brain-testbed.html");
-        assertTrue("sim file not found from " + new java.io.File(".").getAbsolutePath(), sim.exists());
-        String html = new String(java.nio.file.Files.readAllBytes(sim.toPath()), java.nio.charset.StandardCharsets.UTF_8);
+        String html = readRepoFile("sim/shooter-brain-testbed.html");
         int start = html.indexOf("const DEFS = {"), end = html.indexOf("\n};", start);
         assertTrue("DEFS block not found in sim", start > 0 && end > start);
         String defs = html.substring(start, end);
@@ -230,6 +227,88 @@ public class ShooterBrainTest {
         assertEquals("stage names and kinds", javaKinds, simKinds);
         assertEquals("tunables (name=default[min..max/step])", javaTunables, simTunables);
         assertTrue(javaKinds.size() >= 10);
+    }
+
+    /** Shared with the sim: the same inputs must give the same outputs on both sides. */
+    @Test public void parityVectorsPassInJavaAndMatchTheSimCopy() throws java.io.IOException {
+        String text = readRepoFile("sim/parity-vectors.txt");
+        String html = readRepoFile("sim/shooter-brain-testbed.html");
+        String marker = "const PARITY_VECTORS = `";
+        int a = html.indexOf(marker), b = html.indexOf("`;", a);
+        assertTrue("PARITY_VECTORS not found in sim", a > 0 && b > a);
+        assertEquals("the sim's embedded vectors must equal TeamCode/sim/parity-vectors.txt", text.trim(), html.substring(a + marker.length(), b).trim());
+
+        int n = 0;
+        for (String raw : text.split("\n")) {
+            String line = raw.trim();
+            if (line.isEmpty() || line.startsWith("#")) continue;
+            String[] parts = line.split("\\|");
+            assertEquals("three '|' fields: " + line, 3, parts.length);
+            String head = parts[0].trim();
+            int sp = head.indexOf(' ');
+            String kind = head.substring(0, sp), spec = head.substring(sp + 1).trim(), input = parts[1].trim(), expect = parts[2].trim();
+            Pipeline p = Pipeline.fromSpec(spec, ShooterStages.REGISTRY);
+            switch (kind) {
+                case "range": {
+                    ShooterBrain brain = new ShooterBrain(TABLE, p);
+                    for (String fr : input.split(";")) {
+                        fr = fr.trim();
+                        if (fr.equals("-")) { brain.observe(Collections.emptyList(), 0); continue; }
+                        List<Double> tags = new java.util.ArrayList<>();
+                        for (String t : fr.split(",")) tags.add(Double.parseDouble(t.trim()));
+                        brain.observe(tags, 0);
+                    }
+                    assertEquals(line, Double.parseDouble(expect), brain.getRangeMeters(), 1e-3);
+                    break;
+                }
+                case "rpm": {
+                    java.util.Map<String, Double> kv = kv(input);
+                    ShotContext c = new ShotContext(kv.get("range"), 1, 0, kv.get("rpmIn"), Double.NaN, Double.NaN, Double.NaN);
+                    assertEquals(line, Double.parseDouble(expect), p.adjustRpm(c, kv.get("rpmIn")), 1e-3);
+                    break;
+                }
+                case "gate": {
+                    java.util.Map<String, Double> kv = kv(input);
+                    ShotContext c = new ShotContext(kv.getOrDefault("range", 3.0), kv.get("tagCount").intValue(), kv.get("tagAgeMs").longValue(),
+                            kv.get("targetRpm"), kv.get("targetRpm"), kv.get("actualRpm"), Double.NaN);
+                    assertEquals(line, expect, p.checkGates(c).isEmpty() ? "FIRE" : "HOLD");
+                    break;
+                }
+                default: throw new AssertionError("unknown kind in: " + line);
+            }
+            n++;
+        }
+        assertTrue("expected a real vector set, got " + n, n >= 20);
+    }
+
+    /** The sim's exported ShooterConfig must still compile against the rest of the package. */
+    @Test public void simExportNamesEveryShooterConfigMember() throws java.io.IOException {
+        String cfg = readRepoFile("src/main/java/org/firstinspires/ftc/teamcode/shooter/ShooterConfig.java");
+        String html = readRepoFile("sim/shooter-brain-testbed.html");
+        String marker = "const java = `";
+        int a = html.indexOf(marker), b = html.indexOf("`;", a);
+        assertTrue("export template not found in sim", a > 0 && b > a);
+        String template = html.substring(a, b);
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("(?m)^\\s*(?:public |static |final )+[\\w\\[\\]<>.]+ (\\w+)\\s*(?:=|\\()").matcher(cfg);
+        List<String> missing = new java.util.ArrayList<>();
+        int seen = 0;
+        while (m.find()) { seen++; if (!template.contains(m.group(1))) missing.add(m.group(1)); }
+        assertTrue("found no members in ShooterConfig.java", seen >= 8);
+        assertTrue("sim export template lacks: " + missing, missing.isEmpty());
+    }
+
+    private static java.util.Map<String, Double> kv(String input) {
+        java.util.Map<String, Double> out = new java.util.HashMap<>();
+        for (String tok : input.split("\\s+")) { String[] p = tok.split("="); out.put(p[0], Double.parseDouble(p[1])); }
+        return out;
+    }
+
+    /** Gradle runs unit tests from the module directory; Android Studio sometimes from the repo root. */
+    private static String readRepoFile(String relToTeamCode) throws java.io.IOException {
+        java.io.File f = new java.io.File(relToTeamCode);
+        if (!f.exists()) f = new java.io.File("TeamCode/" + relToTeamCode);
+        assertTrue(relToTeamCode + " not found from " + new java.io.File(".").getAbsolutePath(), f.exists());
+        return new String(java.nio.file.Files.readAllBytes(f.toPath()), java.nio.charset.StandardCharsets.UTF_8);
     }
 
     private static String num(double v) {

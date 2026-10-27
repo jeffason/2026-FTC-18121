@@ -12,5 +12,12 @@
     "reason": "The placeholder table lets the OpModes initialise and the sim export compile before calibration night; TeleOp prints an UNCALIBRATED warning while it is in use (ShooterConfig.usingPlaceholderTable) and CalibrationStore replaces it from the hub. Decided 2026-10-26.",
     "acceptedBy": "jeffason",
     "at": "2026-10-26"
+  },
+  {
+    "ruleId": "STRUCT-GUARD-PARSES",
+    "subject": "TeamCode/src/test/java/org/firstinspires/ftc/teamcode/shooter/ShooterBrainTest.java",
+    "reason": "The sim is a standalone HTML file students open from disk, so its stage table cannot be a build artifact; the test reads the DEFS block and the embedded parity vectors at one place each, and parity-vectors.txt is the behavioural chokepoint both sides run. Decided 2026-10-26.",
+    "acceptedBy": "jeffason",
+    "at": "2026-10-26"
   }
 ]

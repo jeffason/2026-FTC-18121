@@ -29,6 +29,7 @@ public class ShooterCalibration extends LinearOpMode {
 
     private final List<double[]> points = new ArrayList<>();   // {meters, rpm}
     private static final int MAX_POINTS = 12;
+    private static final long FRESH_MS = 300;
 
     /** A point within CalibrationStore.SAME_SPOT_METERS of an existing one replaces it; otherwise it is added, up to MAX_POINTS. */
     private void recordPoint(double meters, double rpm) {
@@ -55,7 +56,7 @@ public class ShooterCalibration extends LinearOpMode {
 
         Gamepad prev = new Gamepad();
         double targetRpm = 2000;
-        String javaOut = "";
+        String javaOut = "", hint = "";
         int tagsSeen = 0;
         long lastFrameMs = 0;
 
@@ -75,9 +76,10 @@ public class ShooterCalibration extends LinearOpMode {
             double actualRpm = ShooterConfig.ticksPerSecondToRpm(flywheel.getVelocity());
 
             // --- record / undo / clear / save ---
-            if (gamepad1.a && !prev.a && readout.hasTarget()) {
-                recordPoint(readout.getRangeMeters(), targetRpm);
-                gamepad1.rumble(150);
+            boolean fresh = tagsSeen > 0 && now - lastFrameMs <= FRESH_MS;
+            if (gamepad1.a && !prev.a) {
+                if (readout.hasTarget() && fresh) { recordPoint(readout.getRangeMeters(), targetRpm); hint = ""; gamepad1.rumble(150); }
+                else hint = "Not recorded: no goal tag in the last " + FRESH_MS + " ms. Face the goal and try again.";
             }
             if (gamepad1.b && !prev.b && !points.isEmpty()) points.remove(points.size() - 1);
             if (gamepad1.back && !prev.back) { points.clear(); javaOut = ""; }
@@ -98,7 +100,8 @@ public class ShooterCalibration extends LinearOpMode {
 
             // --- screen ---
             telemetry.addLine("X hold: spin  |  dpad ±25  bumpers ±100  |  A record  B undo  Y save  Back clear");
-            telemetry.addData("Limelight", ranger.isConnected() ? "connected" : "NOT CONNECTED");
+            telemetry.addData("Limelight", ranger.status());
+            if (!hint.isEmpty()) telemetry.addLine(hint);
             telemetry.addData("Range", readout.hasTarget()
                     ? String.format("%.2f m  (%d tags, last frame %d ms ago)", readout.getRangeMeters(), tagsSeen, now - lastFrameMs)
                     : "no target tags in view");

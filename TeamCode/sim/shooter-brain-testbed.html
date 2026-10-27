@@ -129,7 +129,7 @@ pre.code { font-family: var(--mono); font-size: 12px; line-height: 1.55; overflo
 <div class="wrap">
   <header>
     <div>
-      <div class="team">FTC 18121 · Limelight + flywheel bench sim</div>
+      <div class="team">FTC 18121 · Limelight + flywheel bench sim · <span id="parity" title="Shared parity vectors, same file the Java tests run"></span></div>
       <h1>Shooter Brain Testbed</h1>
       <p class="sub">Three shooter brains read the same noisy AprilTag stream. The baseline has an empty pipeline: first tag, table lookup, fire every cycle. The mentor reference is tuned. Yours is whatever you build on the right.</p>
     </div>
@@ -348,6 +348,67 @@ function fromSpec(spec) {
   return out;
 }
 
+// ====================== parity vectors (copy of TeamCode/sim/parity-vectors.txt; ShooterBrainTest checks they match) ======================
+const PARITY_VECTORS = `
+# Shooter stage parity vectors. One line per check, run by ShooterBrainTest (Java) and by the sim on load (JavaScript).
+# kind spec | input | expected
+# range: input = frames separated by ';', each a comma list of tag ranges in metres ('-' = a frame with no tags); expected = final range estimate
+# rpm:   input = range=<m> rpmIn=<rpm>; expected = rpm after the velocity modifiers
+# gate:  input = tagAgeMs=<ms> tagCount=<n> targetRpm=<rpm> actualRpm=<rpm>; expected = FIRE or HOLD
+range OutlierReject(maxDevM=0.3) | 3.0,3.02,2.98,3.8 | 3.0
+range OutlierReject(maxDevM=0.3) | 3.0,3.8 | 3.0
+range OutlierReject(maxDevM=0.1); TagMedian | 3.0,3.1,3.2,5.0 | 3.15
+range TagMean | 3.9,3.0,3.1,3.0 | 3.25
+range TagMedian | 3.9,3.0,3.1,3.0 | 3.05
+range TagMedian | 3.9,3.0,3.1 | 3.1
+range TagMean | 2.5 ; - | 2.5
+range RollingAverage(frames=3) | 1.0 ; 2.0 ; 3.0 ; 6.0 | 3.666667
+range RollingAverage(frames=2.6) | 1.0 ; 2.0 ; 3.0 | 2.0
+range TagMedian; RollingAverage(frames=2) | 2.0,2.0,9.0 ; 4.0,4.0,0.5 | 3.0
+rpm ManualOffset(offsetRpm=100) | range=3 rpmIn=2430 | 2530
+rpm FarShotBoost(startM=2, pctPerM=10) | range=3 rpmIn=2530 | 2783
+rpm FarShotBoost(startM=2.5, pctPerM=1) | range=5 rpmIn=3000 | 3075
+rpm FarShotBoost(startM=2.5, pctPerM=1) | range=2 rpmIn=3000 | 3000
+rpm RangeTrim(slopeRpmPerM=100, pivotM=1) | range=3 rpmIn=2783 | 2983
+rpm RangeTrim(slopeRpmPerM=-50, pivotM=3) | range=1 rpmIn=1750 | 1850
+rpm ManualOffset(offsetRpm=100); FarShotBoost(startM=2, pctPerM=10); !RangeTrim(slopeRpmPerM=100, pivotM=1) | range=3 rpmIn=2430 | 2783
+gate VelocityToleranceGate(tolRpm=60) | tagAgeMs=0 tagCount=1 targetRpm=2430 actualRpm=2300 | HOLD
+gate VelocityToleranceGate(tolRpm=60) | tagAgeMs=0 tagCount=1 targetRpm=2430 actualRpm=2489 | FIRE
+gate RecentTagGate(maxAgeMs=300) | tagAgeMs=301 tagCount=1 targetRpm=2430 actualRpm=2430 | HOLD
+gate RecentTagGate(maxAgeMs=300) | tagAgeMs=300 tagCount=1 targetRpm=2430 actualRpm=2430 | FIRE
+gate !RecentTagGate(maxAgeMs=300) | tagAgeMs=5000 tagCount=1 targetRpm=2430 actualRpm=2430 | FIRE
+gate TagCountGate(minTags=2) | tagAgeMs=0 tagCount=1 targetRpm=2430 actualRpm=2430 | HOLD
+gate TagCountGate(minTags=2) | tagAgeMs=0 tagCount=2 targetRpm=2430 actualRpm=2430 | FIRE
+gate RecentTagGate(maxAgeMs=100); VelocityToleranceGate(tolRpm=10) | tagAgeMs=500 tagCount=1 targetRpm=2430 actualRpm=1000 | HOLD
+gate RecentTagGate(maxAgeMs=100); VelocityToleranceGate(tolRpm=10) | tagAgeMs=50 tagCount=1 targetRpm=2430 actualRpm=2435 | FIRE
+`;
+function runParityVectors() {
+  const fails = []; let n = 0;
+  const kvOf = s => Object.fromEntries(s.split(/\s+/).map(t => { const [k, v] = t.split('='); return [k, parseFloat(v)]; }));
+  for (let line of PARITY_VECTORS.split('\n')) {
+    line = line.trim(); if (!line || line.startsWith('#')) continue;
+    const parts = line.split('|'); if (parts.length !== 3) { fails.push(`bad line: ${line}`); continue; }
+    const head = parts[0].trim(), sp = head.indexOf(' ');
+    const kind = head.slice(0, sp), spec = head.slice(sp + 1).trim(), input = parts[1].trim(), expect = parts[2].trim();
+    try {
+      const stages = fromSpec(spec);
+      if (kind === 'range') {
+        let est = null;
+        for (const fr of input.split(';')) { const t = fr.trim(); if (t === '-') continue; const tags = t.split(',').map(Number); est = applyRange(stages, { tags, t: 0 }, tags[0]); }
+        if (est === null || Math.abs(est - parseFloat(expect)) > 1e-3) fails.push(`${line}  -> got ${est}`);
+      } else if (kind === 'rpm') {
+        const kv = kvOf(input), out = applyRpm(stages, { range: kv.range, tagCount: 1, tagAgeMs: 0, tableRpm: kv.rpmIn, targetRpm: NaN, actualRpm: NaN }, kv.rpmIn);
+        if (Math.abs(out - parseFloat(expect)) > 1e-3) fails.push(`${line}  -> got ${out}`);
+      } else if (kind === 'gate') {
+        const kv = kvOf(input), hold = applyGates(stages, { range: kv.range ?? 3, tagCount: kv.tagCount, tagAgeMs: kv.tagAgeMs, tableRpm: kv.targetRpm, targetRpm: kv.targetRpm, actualRpm: kv.actualRpm });
+        const got = hold ? 'HOLD' : 'FIRE'; if (got !== expect) fails.push(`${line}  -> got ${got} (${hold})`);
+      } else fails.push(`unknown kind: ${line}`);
+    } catch (e) { fails.push(`${line}  -> ${e.message}`); }
+    n++;
+  }
+  return { n, fails };
+}
+
 // ====================== bench + brains ======================
 const bench = { running: true, t: 0, D: 3, wander: false, vel: 0, noise: 1, drag: 1, tau: 0.4, cadence: 1.0, occl: 0, nextFire: 1.0, nextFrame: 0, lastFrame: { dets: [], seen: [false, false, false, false] } };
 const FPS = 30, DT = 1 / 60;
@@ -380,11 +441,10 @@ function limelightFrame() {
   return { dets, seen };
 }
 
-function observe(b, frame) {
-  if (!frame.dets.length) return;
-  const f = { tags: [...frame.dets], t: bench.t };
-  let r = f.tags[0];
-  for (const s of b.stages) {
+// The three pipeline passes, twins of Pipeline.filterRange / adjustRpm / checkGates in Java.
+function applyRange(stages, f, rangeIn) {
+  let r = rangeIn;
+  for (const s of stages) {
     if (s.def.kind !== 'range') continue;
     if (!s.on) { s.effect = 'off'; continue; }
     let out; try { out = s.def.run(s.tun, s.state, f, r); } catch (e) { out = NaN; }
@@ -392,14 +452,23 @@ function observe(b, frame) {
     s.effect = ok ? `${r.toFixed(2)} → ${out.toFixed(2)} m` : 'ignored (bad output)';
     if (ok) r = out;
   }
-  b.est = r; b.lastSeen = bench.t; b.tagCount = f.tags.length;
-  b.errSum += Math.abs(r - bench.D); b.errN++;
+  return r;
 }
-function context(b, targetRpm) { return { range: b.est, tagCount: b.tagCount, tagAgeMs: (bench.t - b.lastSeen) * 1000, tableRpm: b.tableRpm, targetRpm, actualRpm: b.rpm }; }
-function gates(b) {
-  if (b.est === null) return 'no target yet';
-  const ctx = context(b, b.cmd); let hold = '';
-  for (const s of b.stages) {
+function applyRpm(stages, ctx, rpmIn) {
+  let rpm = rpmIn;
+  for (const s of stages) {
+    if (s.def.kind !== 'rpm') continue;
+    if (!s.on) { s.effect = 'off'; continue; }
+    let out; try { out = s.def.run(s.tun, s.state, ctx, rpm); } catch (e) { out = NaN; }
+    const ok = Number.isFinite(out) && out >= 0;
+    s.effect = ok ? `${out - rpm >= 0 ? '+' : ''}${(out - rpm).toFixed(0)} rpm` : 'ignored (bad output)';
+    if (ok) rpm = out;
+  }
+  return rpm;
+}
+function applyGates(stages, ctx) {
+  let hold = '';
+  for (const s of stages) {
     if (s.def.kind !== 'gate') continue;
     if (!s.on) { s.effect = 'off'; continue; }
     let why; try { why = s.def.run(s.tun, s.state, ctx) || ''; } catch (e) { why = ''; }
@@ -407,6 +476,18 @@ function gates(b) {
     if (!hold && why) hold = why;
   }
   return hold;
+}
+function observe(b, frame) {
+  if (!frame.dets.length) return;
+  const f = { tags: [...frame.dets], t: bench.t };
+  const r = applyRange(b.stages, f, f.tags[0]);
+  b.est = r; b.lastSeen = bench.t; b.tagCount = f.tags.length;
+  b.errSum += Math.abs(r - bench.D); b.errN++;
+}
+function context(b, targetRpm) { return { range: b.est, tagCount: b.tagCount, tagAgeMs: (bench.t - b.lastSeen) * 1000, tableRpm: b.tableRpm, targetRpm, actualRpm: b.rpm }; }
+function gates(b) {
+  if (b.est === null) return 'no target yet';
+  return applyGates(b.stages, context(b, b.cmd));
 }
 function fire(b) {
   const x = realLanding(b.rpm), err = x - bench.D, hit = Number.isFinite(err) && Math.abs(err) <= GOAL_HALF;
@@ -421,16 +502,7 @@ function fire(b) {
 function stepBrain(b) {
   if (b.est !== null) {
     b.tableRpm = lookup(b.est);
-    const ctx = context(b, NaN); let rpm = b.tableRpm;
-    for (const s of b.stages) {
-      if (s.def.kind !== 'rpm') continue;
-      if (!s.on) { s.effect = 'off'; continue; }
-      let out; try { out = s.def.run(s.tun, s.state, ctx, rpm); } catch (e) { out = NaN; }
-      const ok = Number.isFinite(out) && out >= 0;
-      s.effect = ok ? `${out - rpm >= 0 ? '+' : ''}${(out - rpm).toFixed(0)} rpm` : 'ignored (bad output)';
-      if (ok) rpm = out;
-    }
-    b.cmd = rpm;
+    b.cmd = applyRpm(b.stages, context(b, NaN), b.tableRpm);
   }
   b.rpm += (b.cmd - b.rpm) * (DT / bench.tau) + randn() * b.cmd * 0.005 * Math.sqrt(DT);
   if (b.pending) {
@@ -602,6 +674,16 @@ public final class ShooterConfig {
     public static double[] CALIBRATION_METERS = { ${CAL.map(p => p.d.toFixed(2)).join(', ')} };
     public static double[] CALIBRATION_RPM    = { ${CAL.map(p => p.rpm.toFixed(0)).join(', ')} };
 
+    /** The values above as shipped, so CalibrationStore can put them back after a saved table is deleted. */
+    static final double[] DEFAULT_CALIBRATION_METERS = CALIBRATION_METERS.clone();
+    static final double[] DEFAULT_CALIBRATION_RPM = CALIBRATION_RPM.clone();
+
+    /** True while the table in use is the sim placeholder rather than one measured on this robot. */
+    public static boolean usingPlaceholderTable() {
+        return java.util.Arrays.equals(CALIBRATION_METERS, DEFAULT_CALIBRATION_METERS)
+            && java.util.Arrays.equals(CALIBRATION_RPM, DEFAULT_CALIBRATION_RPM);
+    }
+
     // --- Hardware ---
     public static String FLYWHEEL_MOTOR = "shooter";
     public static double FLYWHEEL_TICKS_PER_REV = 28;      // encoder ticks per flywheel revolution (28 for a bare goBILDA 5202/5203 shaft)
@@ -651,6 +733,7 @@ hoverOn(cvRange, v => hoverRange = v); hoverOn(cvWheel, v => hoverWheel = v);
 
 // ====================== boot ======================
 readBench(); renderPalette();
+{ const pv = runParityVectors(); const el = $('parity'); el.textContent = pv.fails.length ? `parity ${pv.n - pv.fails.length}/${pv.n} FAIL` : `parity ${pv.n}/${pv.n} ok`; if (pv.fails.length) { el.style.color = 'var(--bad)'; el.title = pv.fails.join('\n'); console.warn('parity vector failures:\n' + pv.fails.join('\n')); } }
 let saved = null; try { saved = localStorage.getItem('shooter-testbed-spec'); } catch (e) { saved = null; }
 if (saved === null || !loadSpec(saved)) { yours.stages = []; pipelineChanged(); }
 renderStats(baseline, $('tilesB')); renderStats(ref, $('tilesR')); renderStats(yours, $('tilesY'));

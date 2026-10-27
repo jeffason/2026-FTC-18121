@@ -90,8 +90,8 @@ public final class CalibrationStore {
             }
             if (m == null || r == null) throw new IllegalArgumentException("missing meters= or rpm= line");
             CalibrationTable table = new CalibrationTable(m, r);   // rejects NaN, unsorted, short or mismatched rows
-            ShooterConfig.CALIBRATION_METERS = table.meters;
-            ShooterConfig.CALIBRATION_RPM = table.rpm;
+            ShooterConfig.CALIBRATION_METERS = table.meters();
+            ShooterConfig.CALIBRATION_RPM = table.rpm();
             lastLoadMessage = "loaded " + m.length + " points from " + f.getName();
             RobotLog.ii("Shooter", "Loaded calibration from " + f.getName() + ": " + asJava(m, r));
             return true;

@@ -25,6 +25,7 @@ public final class LimelightRanger {
     private final int[] tagIds;
     private long lastStamp = Long.MIN_VALUE;
     private LLResult latest;
+    private String lastStatus = "no result yet";
 
     public LimelightRanger(HardwareMap hw) {
         this(hw, ShooterConfig.LIMELIGHT, ShooterConfig.LIMELIGHT_PIPELINE, ShooterConfig.TARGET_TAG_IDS);
@@ -41,6 +42,9 @@ public final class LimelightRanger {
     public boolean isConnected() { return limelight.isConnected(); }
     public LLResult latestResult() { return latest; }
 
+    /** One line for the Driver Station: connection, then what the last poll produced. */
+    public String status() { return (isConnected() ? "" : "NOT CONNECTED · ") + lastStatus; }
+
     /**
      * Call every loop. Returns null when the Limelight has not produced a new frame since the
      * last call (so the brain's rolling window is not fed duplicates), otherwise the ranges of
@@ -48,7 +52,7 @@ public final class LimelightRanger {
      */
     public List<Double> pollRangesMeters() {
         LLResult r = limelight.getLatestResult();
-        if (r == null || !r.isValid()) return null;
+        if (r == null || !r.isValid()) { lastStatus = "no valid result (is the Limelight pipeline type AprilTag?)"; return null; }
         long stamp = r.getControlHubTimeStamp();
         if (stamp == lastStamp) return null;
         lastStamp = stamp;
@@ -64,6 +68,8 @@ public final class LimelightRanger {
             double range = Math.hypot(x, y);           // horizontal distance; ignore height
             if (range > 0.05) out.add(range);          // 0,0 means "no 3D solve"
         }
+        int all = r.getFiducialResults().size();
+        lastStatus = out.size() + " goal tag(s) of " + all + " tag(s) in the last frame";
         return out;
     }
 
