@@ -95,6 +95,16 @@
         "id": "COPY-TEACH-NEXT-ACTION",
         "statement": "Each section of the deck (deck.json sections) ends with something the student does, not only something they now know.",
         "source": "docs/kickoff-deck/deck.json"
+      },
+      {
+        "id": "COPY-TEACH-US-ENGLISH",
+        "statement": "Human-facing text (deck, sim page, README, Driver Station strings) uses American spelling and usage: meter, color, practice (verb), memorize, neighbor, center, modeled, gray. A finding wherever a British form appears.",
+        "source": "docs/kickoff-deck/README.md"
+      },
+      {
+        "id": "COPY-TEACH-SLIDE-DENSITY",
+        "statement": "A slide shows as few words as its point needs and the explanation lives in the speaker notes. A finding for any slide whose on-screen text exceeds about 40 words (90 for a glossary or table slide), or whose on-screen text is a paragraph that would be clearer spoken.",
+        "source": "docs/kickoff-deck/deck.json"
       }
     ]
   }
